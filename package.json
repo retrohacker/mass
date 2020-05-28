@@ -1,8 +1,5 @@
 {
   "main": "./src/index.js",
-  "bin": {
-    "mass": "./bin/index.js"
-  },
   "scripts": {
     "fix-lint": "scripty",
     "lint": "scripty",
