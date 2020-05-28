@@ -1,0 +1,8 @@
+{
+  "db": {
+    "user": "mart",
+    "host": "localhost",
+    "database": "mass",
+    "port": 26257
+  }
+}

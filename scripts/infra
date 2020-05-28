@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+const { spawnSync } = require('child_process')
+const args = (str) => str.split(' ')
+
+const p = (proc) => {
+  const { status } = proc
+  if (status !== 0) {
+    process.exit(status)
+  }
+}
+
+spawnSync('docker', args('rm -f roach1 roach2 roach3'), {
+  stdio: 'inherit'
+})
+
+spawnSync('docker', args('network rm roachnet'), {
+  stdio: 'inherit'
+})
+
+p(spawnSync('docker', args('network create -d bridge roachnet'), {
+  stdio: 'inherit'
+}))
+
+p(spawnSync('docker', args('run -d --name=roach1 --hostname=roach1 --net=roachnet -p 26257:26257 -p 8080:8080 -v /tmp/cockroach-data/roach1:/cockroach/cockroach-data cockroachdb/cockroach:v19.2.0 start --insecure --join=roach1,roach2,roach3'), {
+  stdio: 'inherit'
+}))
+
+p(spawnSync('docker', args('run -d --name=roach2 --hostname=roach2 --net=roachnet -v /tmp/cockroach-data/roach2:/cockroach/cockroach-data cockroachdb/cockroach:v19.2.0 start --insecure --join=roach1,roach2,roach3'), {
+  stdio: 'inherit'
+}))
+
+p(spawnSync('docker', args('run -d --name=roach3 --hostname=roach3 --net=roachnet -v /tmp/cockroach-data/roach3:/cockroach/cockroach-data cockroachdb/cockroach:v19.2.0 start --insecure --join=roach1,roach2,roach3'), {
+  stdio: 'inherit'
+}))
+
+spawnSync('docker', args('exec -it roach1 ./cockroach init --insecure'), {
+  stdio: 'inherit'
+})
+
+let a = args('exec -it roach1 ./cockroach sql --insecure --execute')
+a.push('CREATE USER IF NOT EXISTS mart;')
+spawnSync('docker', a, {
+  stdio: 'inherit'
+})
+
+a = args('exec -it roach1 ./cockroach sql --insecure --execute')
+a.push('CREATE DATABASE IF NOT EXISTS mass;')
+spawnSync('docker', a, {
+  stdio: 'inherit'
+})
+
+a = args('exec -it roach1 ./cockroach sql --insecure --execute')
+a.push('GRANT ALL ON DATABASE mass TO mart;')
+spawnSync('docker', a, {
+  stdio: 'inherit'
+})

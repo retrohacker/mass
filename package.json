@@ -1,0 +1,26 @@
+{
+  "main": "./src/index.js",
+  "bin": {
+    "mass": "./bin/index.js"
+  },
+  "scripts": {
+    "fix-lint": "scripty",
+    "lint": "scripty",
+    "infra": "scripty"
+  },
+  "husky": {
+    "pre-commit": "npm lint"
+  },
+  "dependencies": {
+    "glob": "^7.1.6",
+    "neo-async": "^2.6.1",
+    "pg": "^8.2.1",
+    "pino": "^6.3.0",
+    "restify": "^8.5.1"
+  },
+  "devDependencies": {
+    "husky": "^4.2.5",
+    "standard": "^14.3.4",
+    "scripty": "^2.0.0"
+  }
+}
