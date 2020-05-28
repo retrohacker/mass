@@ -36,6 +36,7 @@ module.exports.init = function init (done) {
     },
     (queries, next) => {
       log.info('executing SQL queries')
+      // execute the queries
       neo.each(queries, (q, cb) => {
         pool.query(q.query, (err, result) => {
           if (err) {
@@ -46,6 +47,7 @@ module.exports.init = function init (done) {
       }, next)
     },
     (_, next) => {
+      // all done
       log.info('initialized database')
       next()
     }
@@ -53,7 +55,7 @@ module.exports.init = function init (done) {
 }
 
 /* Expose our connection pool */
-let pool = module.exports.pool
+let pool = module.exports.pool // this gets set above in init()
 
 /* Teardown the connection pool */
 module.exports.shutdown = function shutdown (done) {

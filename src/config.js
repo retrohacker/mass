@@ -7,6 +7,9 @@ const PATH = '/etc/mass.json'
 log.info('fetching configuration', { path: PATH })
 
 try {
+  // require will throw if there isn't a config file at /etc/mass.json or if
+  // it is malformed, we catch the exception and fallback to using the local
+  // config file
   module.exports = require(PATH)
   log.info({ path: PATH, config: module.exports }, 'fetched config')
 } catch (e) {
