@@ -23,7 +23,7 @@ module.exports.init = function init (done) {
   neo.waterfall([
     (next) => {
       // Grab all the sql files from the init folder
-      glob('./init_sql/*.sql', next)
+      glob('./sql/init/*.sql', next)
     },
     (files, next) => {
       log.info({ files }, 'fetched SQL queries to execute')
