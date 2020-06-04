@@ -3,7 +3,9 @@
   "scripts": {
     "fix-lint": "scripty",
     "lint": "scripty",
-    "infra": "scripty"
+    "infra": "scripty",
+    "pre-test": "fix-lint",
+    "test": "scripty"
   },
   "husky": {
     "pre-commit": "npm lint"
@@ -16,8 +18,11 @@
     "restify": "^8.5.1"
   },
   "devDependencies": {
+    "ava": "^3.8.2",
+    "get-port": "^5.1.1",
+    "got": "^11.1.4",
     "husky": "^4.2.5",
-    "standard": "^14.3.4",
-    "scripty": "^2.0.0"
+    "scripty": "^2.0.0",
+    "standard": "^14.3.4"
   }
 }

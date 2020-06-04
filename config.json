@@ -1,4 +1,7 @@
 {
+  "server": {
+    "listen": [8000, "0.0.0.0"]
+  },
   "db": {
     "user": "mart",
     "host": "localhost",
