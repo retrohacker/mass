@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS changesets (
-  digest STRING PRIMARY KEY,
   name STRING,
   image STRING,
+  id INT PRIMARY KEY DEFAULT unique_rowid(),
   created TIMESTAMPTZ NOT NULL DEFAULT current_timestamp()
 );
