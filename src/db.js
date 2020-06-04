@@ -6,18 +6,11 @@ const glob = require('glob')
 const fs = require('fs')
 const path = require('path')
 
-module.exports = {}
-
 /* Establish a connection to an SQL database */
-module.exports.init = function init (done) {
-  // If we already have a pool created, short circuit
-  if (pool) {
-    log.info('attempting to re-instantiate db, short circuit')
-    return done()
-  }
+module.exports = function init (done) {
   log.info({ config: config.db }, 'connecting to db')
   // The first step is to create a pool of connections to the database
-  pool = module.exports.pool = new pg.Pool(config.db)
+  const pool = module.exports.pool = new pg.Pool(config.db)
 
   // Next we load in all of the SQL queries we want to run against the database
   // when we initialize ourselves
@@ -52,14 +45,5 @@ module.exports.init = function init (done) {
       log.info('initialized database')
       next()
     }
-  ], done)
-}
-
-/* Expose our connection pool */
-let pool = module.exports.pool // this gets set above in init()
-
-/* Teardown the connection pool */
-module.exports.shutdown = function shutdown (done) {
-  log.info('shutting down db')
-  pool.end(done)
+  ], (e) => done(e, pool))
 }

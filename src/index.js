@@ -1,6 +1,7 @@
 const db = require('./db')
 const log = require('./log')
 const restify = require('restify')
+const neo = require('neo-async')
 
 module.exports = function init (config, cb) {
   const server = restify.createServer({
@@ -10,15 +11,31 @@ module.exports = function init (config, cb) {
   server.use(restify.plugins.bodyParser())
   server.post('/changesets', require('./routes/changesets/post.js'))
 
-  db.init(() => {
-    log.info({ config: config.server }, 'starting server')
-    server.listen(...config.server.listen, () => {
+  let pool
+  const result = {}
+  result.close = done => {
+    neo.parallel([
+      (cb) => server.close(cb),
+      (cb) => pool ? pool.end(cb) : cb()
+    ], done)
+  }
+  neo.waterfall([
+    (cb) => db(cb),
+    (p, cb) => {
+      pool = p
       log.info({ config: config.server }, 'server up')
-      if (cb) return cb(undefined, server)
-    })
+      server.listen(...config.server.listen, cb)
+    }
+  ], function (e) {
+    cb(e, result)
   })
 }
 
 if (require.main === module) {
-  module.exports(require('./config.js'))
+  module.exports(require('./config.js'), function (err) {
+    log.error({ err })
+    if (err) {
+      throw err
+    }
+  })
 }
