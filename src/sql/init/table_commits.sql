@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS changesets (
+CREATE TABLE IF NOT EXISTS commits (
   digest STRING PRIMARY KEY,
-  name STRING,
-  image STRING,
+  parent STRING,
+  root STRING,
   created TIMESTAMPTZ NOT NULL DEFAULT current_timestamp()
 );

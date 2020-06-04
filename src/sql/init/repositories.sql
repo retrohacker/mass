@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS repositories (
+  name STRING PRIMARY KEY,
+  head STRING
+);
