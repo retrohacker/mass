@@ -4,7 +4,7 @@
     "fix-lint": "scripty",
     "lint": "scripty",
     "infra": "scripty",
-    "pre-test": "fix-lint",
+    "pretest": "npm run fix-lint",
     "test": "scripty"
   },
   "husky": {

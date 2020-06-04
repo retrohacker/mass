@@ -4,7 +4,7 @@ const config = require('./config')
 const log = require('./log')
 const glob = require('glob')
 const fs = require('fs')
-const path = require('path');
+const path = require('path')
 
 module.exports = {}
 
