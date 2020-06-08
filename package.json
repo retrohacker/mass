@@ -15,7 +15,8 @@
     "neo-async": "^2.6.1",
     "pg": "^8.2.1",
     "pino": "^6.3.0",
-    "restify": "^8.5.1"
+    "restify": "^8.5.1",
+    "uuid-parse": "^1.1.0"
   },
   "devDependencies": {
     "ava": "^3.8.2",

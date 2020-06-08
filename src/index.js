@@ -9,7 +9,6 @@ module.exports = function init (config, cb) {
   })
 
   server.use(restify.plugins.bodyParser())
-  server.post('/changesets', require('./routes/changesets/post.js'))
 
   let pool
   const result = {}
@@ -25,6 +24,11 @@ module.exports = function init (config, cb) {
       pool = p
       log.info({ config: config.server }, 'server up')
       server.listen(...config.server.listen, cb)
+    },
+    (cb) => {
+      // load routes
+      server.post('/changesets', require('./routes/changesets/post.js')(pool))
+      cb()
     }
   ], function (e) {
     cb(e, result)

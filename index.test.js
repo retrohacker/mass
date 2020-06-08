@@ -124,3 +124,14 @@ test("server should 400 on non-string-array stakeholders", async t => {
   t.plan(1);
   t.is(400, resp.statusCode);
 });
+
+test("server should return uuid on payload", async t => {
+  const [p] = await getServer(t);
+  const b = body();
+  const resp = await got.post(`http://127.0.0.1:${p}/changesets`, {
+    throwHttpErrors: false,
+    json: b
+  }).json();
+  t.plan(1);
+  t.not(resp.uuid, undefined, "got uuid back");
+});
