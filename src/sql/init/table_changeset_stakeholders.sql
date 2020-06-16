@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS changeset_stakeholders (
-  changeset STRING,
+  changeset INT,
   stakeholder STRING,
   PRIMARY KEY (changeset, stakeholder)
 );

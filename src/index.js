@@ -28,6 +28,7 @@ module.exports = function init (config, cb) {
     (cb) => {
       // load routes
       server.post('/changesets', require('./routes/changesets/post.js')(pool))
+      server.get('/changesets/:uuid', require('./routes/changesets/get.js')(pool))
       cb()
     }
   ], function (e) {

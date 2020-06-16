@@ -1,7 +1,7 @@
 const test = require('ava');
 const port = require('get-port');
 const { promisify } = require('util');
-const server = promisify(require("./src/index.js"));
+const server = promisify(require("../src/index.js"));
 const got = require("got");
 const config = () => ({
   "server": {
@@ -23,7 +23,7 @@ const getServer = async t => {
   t.teardown(async () => {
     await promisify(s.close);
   })
-  return [p, server];
+  return [p, s];
 }
 
 const body = () => ({

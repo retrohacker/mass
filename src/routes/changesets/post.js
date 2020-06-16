@@ -75,7 +75,7 @@ module.exports = (pool) => (request, response, next) => {
         , cb)
     },
     (res, cb) => {
-      log.info({ image, name }, 'commit transaction')
+      log.info({ image, name, result }, 'commit transaction')
       client.query('COMMIT', err => cb(err))
     },
     (cb) => {
@@ -84,11 +84,9 @@ module.exports = (pool) => (request, response, next) => {
       cb()
     }
   ], (err) => {
-    log.info('done with waterfall')
     if (done) {
       done()
     }
-    log.info('invoked done')
     if (err && transaction) {
       client.query('ROLLBACK', err => {
         if (err) {
@@ -96,17 +94,14 @@ module.exports = (pool) => (request, response, next) => {
         }
       })
     }
-    log.info('passed rollback')
     if (err) {
       log.error({ err })
       err.statusCode = 500
       return next(err)
     }
-    log.info('didnt return 500')
     response.header('content-type', 'application/json')
     response.status(201)
     response.send(result)
-    log.info('invoking next')
     next()
   })
 }
