@@ -1,9 +1,6 @@
 const log = require('../../log')
-const fs = require('fs')
-const path = require('path')
 const neo = require('neo-async')
-const sql = {}
-sql.changeset = fs.readFileSync(path.join(__dirname, '..', '..', 'sql', 'get', 'changeset.sql'), 'utf8')
+const sql = require('../../sql')
 const isUUID = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
 module.exports = (pool) => (request, response, next) => {
@@ -30,7 +27,7 @@ module.exports = (pool) => (request, response, next) => {
       client = c
       done = d
       log.info({ uuid }, 'query')
-      client.query(sql.changeset, [uuid], cb)
+      client.query(sql.select.changeset, [uuid], cb)
     },
     (res, cb) => {
       result = {

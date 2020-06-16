@@ -16,3 +16,4 @@ try {
   log.info({ path: PATH, err: e }, 'failed to load config, using default')
   module.exports = require('../config.json')
 }
+log.info({ config: module.exports }, 'server starting with config')

@@ -1,11 +1,7 @@
 const log = require('../../log')
 const uuidParse = require('uuid-parse')
 const neo = require('neo-async')
-const fs = require('fs')
-const sql = {}
-const path = require('path')
-sql.changeset = fs.readFileSync(path.join(__dirname, '..', '..', 'sql', 'changeset.sql'), 'utf8')
-sql.stakeholders = fs.readFileSync(path.join(__dirname, '..', '..', 'sql', 'stakeholders.sql'), 'utf8')
+const sql = require('../../sql')
 
 module.exports = (pool) => (request, response, next) => {
   log.info({ body: request.body }, 'got request')
@@ -60,7 +56,7 @@ module.exports = (pool) => (request, response, next) => {
     (cb) => {
       log.info({ image, name }, 'creating changeset')
       transaction = true
-      client.query(sql.changeset, [name, image], cb)
+      client.query(sql.insert.changeset, [name, image], cb)
     },
     (res, cb) => {
       id = res.rows[0].id
@@ -71,7 +67,7 @@ module.exports = (pool) => (request, response, next) => {
     (cb) => {
       log.info({ image, name }, 'creating stakeholders')
       neo.each(stakeholders,
-        (stakeholder, callback) => client.query(sql.stakeholders, [id, stakeholder], callback)
+        (stakeholder, callback) => client.query(sql.insert.stakeholders, [id, stakeholder], callback)
         , cb)
     },
     (res, cb) => {
