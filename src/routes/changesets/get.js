@@ -1,24 +1,10 @@
 const log = require('../../log')
 const neo = require('neo-async')
 const sql = require('../../sql')
-const isUUID = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
 module.exports = (pool) => (request, response, next) => {
-  log.info({ params: request.prams }, 'got request')
-
-  // Convienence wrapper for rejecting invalid payloads
-  const invalid = (msg) => {
-    const err = new Error(msg)
-    err.statusCode = 400
-    return next(err)
-  }
-
-  const { uuid } = request.params
-
-  // First validate our payload
-  if (!isUUID.test(uuid)) {
-    return invalid('expected valid v4 uuid string')
-  }
+  log.info({ query: request.query }, 'got request')
+  const { name } = request.query
 
   let client, done, result
   neo.waterfall([
@@ -26,16 +12,34 @@ module.exports = (pool) => (request, response, next) => {
     (c, d, cb) => {
       client = c
       done = d
-      log.info({ uuid }, 'query')
-      client.query(sql.select.changeset, [uuid], cb)
+      log.info('query')
+      if (name) {
+        client.query(sql.select.changesetsByName, [name], cb)
+      } else {
+        client.query(sql.select.changesets, cb)
+      }
     },
     (res, cb) => {
-      result = {
-        name: res.rows[0].name,
-        image: res.rows[0].image,
-        stakeholders: []
+      if (name) {
+        const changesets = new Map()
+        for (let i = 0; i < res.rows.length; i++) {
+          const row = res.rows[i]
+          if (!changesets.has(row.uuid)) {
+            changesets.set(row.uuid, {
+              uuid: row.uuid,
+              created: row.created,
+              name: row.name,
+              image: row.image,
+              stakeholders: [row.stakeholder]
+            })
+          } else {
+            changesets.get(row.uuid).stakeholders.push(row.stakeholder)
+          }
+        }
+        result = { changesets: Array.from(changesets.values()) }
+      } else {
+        result = { changesets: res.rows.map(v => v.name) }
       }
-      res.rows.forEach(v => result.stakeholders.push(v.stakeholder))
       cb()
     }
   ], err => {

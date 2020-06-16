@@ -9,6 +9,9 @@ module.exports = function init (config, cb) {
   })
 
   server.use(restify.plugins.bodyParser())
+  server.use(restify.plugins.queryParser({
+    mapParams: false
+  }))
 
   let pool
   const result = {}
@@ -28,7 +31,8 @@ module.exports = function init (config, cb) {
     (cb) => {
       // load routes
       server.post('/changesets', require('./routes/changesets/post.js')(pool))
-      server.get('/changesets/:uuid', require('./routes/changesets/get.js')(pool))
+      server.get('/changesets/:uuid', require('./routes/changesets/get-uuid.js')(pool))
+      server.get('/changesets', require('./routes/changesets/get.js')(pool))
       cb()
     }
   ], function (e) {

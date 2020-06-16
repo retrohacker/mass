@@ -64,5 +64,32 @@ test("server should error on invalid uuid string", async t => {
   resp = await got.get(`http://127.0.0.1:${p}/changesets/foobar`, {
     throwHttpErrors: false,
   });
-  t.deepEqual(resp.statusCode, 400);
+  t.is(resp.statusCode, 400);
+});
+
+test("server should return array on get", async t => {
+  t.plan(2);
+  const { body } = t.context;
+  const p = t.context.port;
+  resp = await got.get(`http://127.0.0.1:${p}/changesets`, {
+    throwHttpErrors: false,
+  }).json();
+  t.assert(Array.isArray(resp.changesets), 'changesets is an array');
+  t.assert(resp.changesets.length > 0, 'changesets has at least one element');
+});
+
+test.only("server should return changesets matching name", async t => {
+  t.plan(5);
+  const { body, uuid } = t.context;
+  const p = t.context.port;
+  resp = await got.get(`http://127.0.0.1:${p}/changesets?name=${body.name}`, {
+    throwHttpErrors: false,
+  }).json();
+  t.assert(Array.isArray(resp.changesets), 'changesets is an array');
+  t.assert(resp.changesets.length > 0, 'changesets has at least one element');
+  t.truthy(resp.changesets[0].created, 'changeset includes timestamp');
+  t.truthy(resp.changesets[0].uuid, 'changeset includes uuid');
+  body.uuid = uuid;
+  body.created = resp.changesets[0].created;
+  t.deepEqual({ changesets: [ body ]}, resp);
 });
