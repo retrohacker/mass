@@ -80,15 +80,18 @@ module.exports = (pool) => (request, response, next) => {
       cb()
     }
   ], (err) => {
-    if (done) {
-      done()
-    }
     if (err && transaction) {
+      // Fire off the rollack but don't block responding to the client
       client.query('ROLLBACK', err => {
         if (err) {
           log.error({ err }, 'failed to rollback transaction')
         }
+        done()
       })
+    } else {
+      // If we don't need to rollback, go ahead and return the pg client to the
+      // pool
+      done()
     }
     if (err) {
       log.error({ err })
