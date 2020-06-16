@@ -20,14 +20,11 @@ module.exports = (pool) => (request, response, next) => {
     return invalid('expected valid v4 uuid string')
   }
 
-  let client, done, result
+  let result
   neo.waterfall([
-    (cb) => pool.connect(cb),
-    (c, d, cb) => {
-      client = c
-      done = d
+    (cb) => {
       log.info({ uuid }, 'query')
-      client.query(sql.select.changeset, [uuid], cb)
+      pool.query(sql.select.changeset, [uuid], cb)
     },
     (res, cb) => {
       result = {
@@ -39,9 +36,6 @@ module.exports = (pool) => (request, response, next) => {
       cb()
     }
   ], err => {
-    if (done) {
-      done()
-    }
     if (err) {
       log.error({ err })
       err.statusCode = 500

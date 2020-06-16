@@ -6,46 +6,23 @@ module.exports = (pool) => (request, response, next) => {
   log.info({ query: request.query }, 'got request')
   const { name } = request.query
 
-  let client, done, result
+  let result = {}
   neo.waterfall([
-    (cb) => pool.connect(cb),
-    (c, d, cb) => {
-      client = c
-      done = d
-      log.info('query')
+    (cb) => {
       if (name) {
-        client.query(sql.select.changesetsByName, [name], cb)
-      } else {
-        client.query(sql.select.changesets, cb)
+        return pool.query(sql.select.changesetsByName, [name], cb)
       }
+      pool.query(sql.select.changesets, cb)
     },
     (res, cb) => {
       if (name) {
-        const changesets = new Map()
-        for (let i = 0; i < res.rows.length; i++) {
-          const row = res.rows[i]
-          if (!changesets.has(row.uuid)) {
-            changesets.set(row.uuid, {
-              uuid: row.uuid,
-              created: row.created,
-              name: row.name,
-              image: row.image,
-              stakeholders: [row.stakeholder]
-            })
-          } else {
-            changesets.get(row.uuid).stakeholders.push(row.stakeholder)
-          }
-        }
-        result = { changesets: Array.from(changesets.values()) }
+        result = { changesets: res.rows }
       } else {
         result = { changesets: res.rows.map(v => v.name) }
       }
       cb()
     }
   ], err => {
-    if (done) {
-      done()
-    }
     if (err) {
       log.error({ err })
       err.statusCode = 500
