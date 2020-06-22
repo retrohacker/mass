@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { spawnSync } = require('child_process')
-const { status } = spawnSync('ava', [], {
+const { status } = spawnSync('ava', ['-t'], {
   stdio: 'inherit'
 })
 process.exit(status)
