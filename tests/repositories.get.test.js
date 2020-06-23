@@ -55,6 +55,7 @@ test.beforeEach(async t => {
   t.context.changesets = changesets;
   t.true(typeof resp.name === 'string');
   t.regex(resp.head || '', /^[0-9a-zA-Z]{64}$/, 'got digest back');
+  t.context.commit = resp.head;
 });
 
 test.afterEach(async t => {
@@ -104,4 +105,16 @@ test("server should 404 list of commits for non-existant repo", async t => {
     throwHttpErrors: false
   });
   t.is(resp.statusCode, 404, '404 on non-existant repo');
+});
+
+test("server should return commit", async t => {
+  const p = t.context.port;
+  const name = t.context.changesets[0].name;
+  const commit = t.context.commit;
+  const url = `http://127.0.0.1:${p}/repositories/${name}/commits/${commit}`
+  const resp = await got.get(url).json();
+  t.deepEqual({
+    digest: commit,
+    parent: null
+  }, resp,  'got back a commit object');
 });

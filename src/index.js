@@ -37,6 +37,7 @@ module.exports = function init (config, cb) {
       server.get('/repositories', require('./routes/repositories/get.js')(pool))
       server.get('/repositories/:name', require('./routes/repositories/get-name.js')(pool))
       server.get('/repositories/:name/commits', require('./routes/repositories/get-commits.js')(pool))
+      server.get('/repositories/:name/commits/:commit', require('./routes/repositories/get-commits-commit.js')(pool))
       cb()
     }
   ], function (e) {
