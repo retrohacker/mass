@@ -102,7 +102,7 @@ test.only("server should return repository obj", async t => {
   const resp = await got.post(`http://127.0.0.1:${p}/repositories`, {
     throwHttpErrors: false,
     json: {
-      changeset: t.context.changesets[0].name // no deps
+      changeset: t.context.changesets[0].name
     }
   }).json();
   t.true(typeof resp.name === 'string');
