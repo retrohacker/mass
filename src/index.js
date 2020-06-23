@@ -33,6 +33,7 @@ module.exports = function init (config, cb) {
       server.post('/changesets', require('./routes/changesets/post.js')(pool))
       server.get('/changesets/:uuid', require('./routes/changesets/get-uuid.js')(pool))
       server.get('/changesets', require('./routes/changesets/get.js')(pool))
+      server.post('/repositories', require('./routes/repositories/post.js')(pool))
       cb()
     }
   ], function (e) {
