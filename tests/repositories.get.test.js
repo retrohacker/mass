@@ -77,3 +77,31 @@ test("server should 404 on missing repository", async t => {
   });
   t.is(resp.statusCode, 404, '404 on non-existant repo');
 });
+
+
+test("server should return list of repositories", async t => {
+  const p = t.context.port;
+  const resp = await got.get(`http://127.0.0.1:${p}/repositories`).json();
+  t.true(Array.isArray(resp.repositories), 'got list of repositories back');
+  t.true(resp.repositories.length > 1, 'get back at least the one we created');
+});
+
+test("server should return list of commits", async t => {
+  const p = t.context.port;
+  const name = t.context.changesets[0].name;
+  const url = `http://127.0.0.1:${p}/repositories/${name}/commits`
+  const resp = await got.get(url).json();
+  t.true(Array.isArray(resp.commits), 'got list of commits back');
+  const repository = await got.get(`http://127.0.0.1:${p}/repositories/${name}`).json();
+  t.deepEqual([repository.head], resp.commits,  'get back HEAD');
+});
+
+test("server should 404 list of commits for non-existant repo", async t => {
+  const p = t.context.port;
+  const name = uuid.v4();
+  const url = `http://127.0.0.1:${p}/repositories/${name}/commits`
+  const resp = await got.get(url, {
+    throwHttpErrors: false
+  });
+  t.is(resp.statusCode, 404, '404 on non-existant repo');
+});

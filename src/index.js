@@ -34,7 +34,9 @@ module.exports = function init (config, cb) {
       server.get('/changesets/:uuid', require('./routes/changesets/get-uuid.js')(pool))
       server.get('/changesets', require('./routes/changesets/get.js')(pool))
       server.post('/repositories', require('./routes/repositories/post.js')(pool))
+      server.get('/repositories', require('./routes/repositories/get.js')(pool))
       server.get('/repositories/:name', require('./routes/repositories/get-name.js')(pool))
+      server.get('/repositories/:name/commits', require('./routes/repositories/get-commits.js')(pool))
       cb()
     }
   ], function (e) {
