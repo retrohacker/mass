@@ -57,6 +57,17 @@ module.exports = (pool) => (request, response, next) => {
       return cb()
     },
     (cb) => {
+      pool.query(sql.exists.changeset, [changeset], cb)
+    },
+    (resp, cb) => {
+      if (resp.rows.length === 0) {
+        const err = new Error('Changeset does not exist')
+        err.invalid = true
+        return err
+      }
+      return cb()
+    },
+    (cb) => {
       // This query grabs the latest changeset under a given name and the
       // latest changeset for each dependency in it's dependency tree.
       pool.query(sql.select.changesetDeps, [changeset], cb)
