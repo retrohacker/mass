@@ -27,12 +27,7 @@ module.exports = (pool) => (request, response, next) => {
       pool.query(sql.select.changeset, [uuid], cb)
     },
     (res, cb) => {
-      result = {
-        name: res.rows[0].name,
-        image: res.rows[0].image,
-        stakeholders: []
-      }
-      res.rows.forEach(v => result.stakeholders.push(v.stakeholder))
+      result = res.rows[0]
       cb()
     }
   ], err => {
