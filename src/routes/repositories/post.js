@@ -52,7 +52,7 @@ module.exports = (pool) => (request, response, next) => {
       if (resp.rows.length > 0) {
         const err = new Error('Repository already exists')
         err.invalid = true
-        return err
+        return cb(err)
       }
       return cb()
     },
@@ -63,7 +63,7 @@ module.exports = (pool) => (request, response, next) => {
       if (resp.rows.length === 0) {
         const err = new Error('Changeset does not exist')
         err.invalid = true
-        return err
+        return cb(err)
       }
       return cb()
     },
