@@ -27,6 +27,11 @@ module.exports = (pool) => (request, response, next) => {
       pool.query(sql.select.changeset, [uuid], cb)
     },
     (res, cb) => {
+      if (res.rows.length === 0) {
+        const err = new Error(`No changeset with uuid: ${uuid}`)
+        err.statusCode = 404
+        return cb(err)
+      }
       result = res.rows[0]
       cb()
     }
@@ -37,7 +42,7 @@ module.exports = (pool) => (request, response, next) => {
       return next(err)
     }
     response.header('content-type', 'application/json')
-    response.status(201)
+    response.status(200)
     response.send(result)
     next()
   })

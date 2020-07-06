@@ -3,6 +3,7 @@ const port = require('get-port');
 const { promisify } = require('util');
 const server = promisify(require("../src/index.js"));
 const got = require("got");
+const uuid = require('uuid');
 const config = () => ({
   "server": {
     "listen": [8000, "0.0.0.0"]
@@ -55,6 +56,16 @@ test("server should return uuid on payload", async t => {
     throwHttpErrors: false,
   }).json();
   t.deepEqual(resp, body, "get returns body back after post")
+});
+
+test("server should 400 on non-existant uuid", async t => {
+  t.plan(1);
+  const { body } = t.context;
+  const p = t.context.port;
+  resp = await got.get(`http://127.0.0.1:${p}/changesets/${uuid.v4()}`, {
+    throwHttpErrors: false,
+  });
+  t.is(resp.statusCode, 404)
 });
 
 test("server should error on invalid uuid string", async t => {
