@@ -93,11 +93,10 @@ test("server should 400 on non-existant changeset", async t => {
       changeset: 'does-not-exist'
     }
   });
-  t.plan(1);
   t.is(400, resp.statusCode);
 });
 
-test.only("server should return repository obj", async t => {
+test("server should return repository obj", async t => {
   const [p] = await getServer(t);
   const resp = await got.post(`http://127.0.0.1:${p}/repositories`, {
     throwHttpErrors: false,

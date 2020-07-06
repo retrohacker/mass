@@ -89,7 +89,7 @@ test("server should return array on get", async t => {
   t.assert(resp.changesets.length > 0, 'changesets has at least one element');
 });
 
-test.only("server should return changesets matching name", async t => {
+test("server should return changesets matching name", async t => {
   t.plan(5);
   const { body, uuid } = t.context;
   const p = t.context.port;
