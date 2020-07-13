@@ -1,8 +1,8 @@
 # MASS
 
-The managed artifact stake service, because naming is hard.
+The Managed Artifact Stake Service
 
-> Still a early work in progress
+> Open By Default: Still a early work in progress
 
 ## Local Dev
 
@@ -11,17 +11,9 @@ You need to have node, npm, and docker installed.
 * [install node](https://www.npmjs.com/package/n)
 * [install docker](https://docs.docker.com/engine/install/)
 
-Then open a terminal and
+Then open a terminal and run `npm run infra`. This will create all the infrastructure pieces necessary to run using docker.
 
-```sh
-npm run infra
-```
-
-Will create all the infrastructure pieces you need using docker
-
-```sh
-npm run start
-```
+Then you can run `npm run start` to get a local copy of the server running for development.
 
 ## Deploying
 
