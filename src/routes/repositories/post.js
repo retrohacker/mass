@@ -46,7 +46,7 @@ module.exports = (pool) => (request, response, next) => {
   neo.waterfall([
     (cb) => {
       // Ensure the repository doesn't already exist
-      pool.query(sql.exists.repository, [changeset], cb)
+      pool.query(sql.select.repository, [changeset], cb)
     },
     (resp, cb) => {
       if (resp.rows.length > 0) {
