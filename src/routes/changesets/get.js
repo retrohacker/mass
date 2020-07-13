@@ -1,8 +1,7 @@
-const log = require('../../log')
 const sql = require('../../sql')
 
 module.exports = (pool) => (request, response, next) => {
-  log.info({ query: request.query }, 'got request')
+  request.log.info({ query: request.query }, 'got request')
   const { name } = request.query
 
   // This endpoint accepts two forms:
@@ -24,7 +23,7 @@ module.exports = (pool) => (request, response, next) => {
     // If we got an error back from the database, generate a 500 and abort the
     // request.
     if (err) {
-      log.error({ err })
+      request.log.error({ err })
       err.statusCode = 500
       return next(err)
     }

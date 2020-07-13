@@ -1,9 +1,8 @@
-const log = require('../../log')
 const neo = require('neo-async')
 const sql = require('../../sql')
 
 module.exports = (pool) => (request, response, next) => {
-  log.info({ params: request.params }, 'got request')
+  request.log.info({ params: request.params }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads
   const invalid = (msg) => {
@@ -26,7 +25,7 @@ module.exports = (pool) => (request, response, next) => {
   let result
   neo.waterfall([
     (cb) => {
-      log.info({ name }, 'query')
+      request.log.info({ name }, 'query')
       pool.query(sql.select.repository, [name], cb)
     },
     (res, cb) => {
@@ -35,7 +34,7 @@ module.exports = (pool) => (request, response, next) => {
     }
   ], err => {
     if (err) {
-      log.error({ err })
+      request.log.error({ err })
       err.statusCode = 500
       return next(err)
     }

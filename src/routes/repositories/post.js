@@ -1,4 +1,3 @@
-const log = require('../../log')
 const sql = require('../../sql')
 const neo = require('neo-async')
 const crypto = require('crypto')
@@ -17,7 +16,7 @@ const repoDigest = (parent, stakeholders) => {
 }
 
 module.exports = (pool) => (request, response, next) => {
-  log.info({ body: request.body }, 'got request')
+  request.log.info({ body: request.body }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads
   const invalid = (msg) => {
@@ -40,7 +39,7 @@ module.exports = (pool) => (request, response, next) => {
     return invalid('changeset must be a string')
   }
 
-  log.info({ changeset }, 'creating repository')
+  request.log.info({ changeset }, 'creating repository')
 
   let digest
   neo.waterfall([
@@ -76,7 +75,7 @@ module.exports = (pool) => (request, response, next) => {
       // Turn the snapshot of the dependency tree into an initial commit
       const changesets = res.rows.map(r => r.uuid)
       const digest = repoDigest('null', changesets)
-      log.info({
+      request.log.info({
         changesets,
         digest
       }, 'generating commit')
@@ -92,7 +91,7 @@ module.exports = (pool) => (request, response, next) => {
       return invalid(err.message)
     }
     if (err) {
-      log.error({ err })
+      request.log.error({ err })
       err.statusCode = 500
       return next(err)
     }

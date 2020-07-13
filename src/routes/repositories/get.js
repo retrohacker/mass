@@ -1,11 +1,10 @@
-const log = require('../../log')
 const sql = require('../../sql')
 
 module.exports = (pool) => (request, response, next) => {
-  log.info('got request')
+  request.log.info('got request')
   pool.query(sql.select.repositories, (err, resp) => {
     if (err) {
-      log.error({ err })
+      request.log.error({ err })
       err.statusCode = 500
       return next(err)
     }

@@ -3,7 +3,6 @@ const sql = {}
 const debug = {}
 const path = require('path')
 const fs = require('fs')
-const log = require('../log')
 
 const files = glob.sync(path.join(__dirname, '**', '*.sql'))
 for (let i = 0; i < files.length; i++) {
@@ -18,11 +17,8 @@ for (let i = 0; i < files.length; i++) {
     dref = dref[v]
   })
   const name = path.basename(file, '.sql')
-  log.info({ file }, 'loading sql file')
   ref[name] = fs.readFileSync(file, 'utf8')
   dref[name] = true
 }
-
-log.info({ debug }, 'loaded all sql files')
 
 module.exports = sql

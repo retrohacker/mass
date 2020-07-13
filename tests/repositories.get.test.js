@@ -5,6 +5,7 @@ const got = require('got')
 const uuid = require('uuid')
 const crypto = require('crypto')
 const Aigle = require('aigle')
+const pino = require('pino')
 
 const body = () => ({
   name: uuid.v4(),
@@ -117,7 +118,9 @@ test('server should return commit', async t => {
 test('server should paginate commits', async t => {
   // Create our own connection to the database
   const db = promisify(require('../src/db'))
-  const pool = await db()
+  const config = JSON.parse(JSON.stringify(t.context.config))
+  config.log = pino(config.log)
+  const pool = await db(config)
   const root = t.context.commit
   const port = t.context.port
   const name = t.context.changesets[0].name

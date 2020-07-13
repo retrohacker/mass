@@ -29,6 +29,10 @@ const CONFIG = {
     host: 'localhost',
     database: 'mass',
     port: 26257
+  },
+  log: {
+    name: 'mass',
+    level: 'silent'
   }
 }
 

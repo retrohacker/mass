@@ -1,4 +1,3 @@
-const log = require('../../log')
 const sql = require('../../sql')
 const isDigest = /^[0-9a-zA-Z]{64}$/
 
@@ -27,7 +26,6 @@ function sortCommits (rows) {
     if (parents.has(digest)) {
       continue
     }
-    log.info({ digest, row }, 'found digest')
     result.push(row)
     break
   }
@@ -47,7 +45,7 @@ function sortCommits (rows) {
 }
 
 module.exports = (pool) => (request, response, next) => {
-  log.info({ query: request.query, params: request.params }, 'got request')
+  request.log.info({ query: request.query, params: request.params }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads
   const invalid = (msg) => {
@@ -81,7 +79,7 @@ module.exports = (pool) => (request, response, next) => {
     return invalid('expected from to be sha256 digest')
   }
 
-  log.info({ name, from }, 'query')
+  request.log.info({ name, from }, 'query')
   // Given the name of the repo, select the commit pointed to by the repo's
   // HEAD and up to 99 additional parent commits
   let query = sql.select['repo-commits']
@@ -94,7 +92,7 @@ module.exports = (pool) => (request, response, next) => {
   }
   pool.query(query, args, (err, res) => {
     if (err) {
-      log.error({ err })
+      request.log.error({ err })
       err.statusCode = 500
       return next(err)
     }

@@ -1,12 +1,12 @@
 const db = require('./db')
-const log = require('./log')
 const restify = require('restify')
 const neo = require('neo-async')
+const pino = require('pino')
 
-module.exports = function init (config, cb) {
-  const server = restify.createServer({
-    log
-  })
+module.exports = function init (conf, cb) {
+  const config = JSON.parse(JSON.stringify(conf))
+  const log = config.log = pino(config.log)
+  const server = restify.createServer({ log: config.log })
 
   server.use(restify.plugins.bodyParser())
   server.use(restify.plugins.queryParser({
@@ -22,7 +22,7 @@ module.exports = function init (config, cb) {
     ], done)
   }
   neo.waterfall([
-    (cb) => db(cb),
+    (cb) => db(config, cb),
     (p, cb) => {
       pool = p
       log.info({ config: config.server }, 'server up')
@@ -46,8 +46,9 @@ module.exports = function init (config, cb) {
 }
 
 if (require.main === module) {
+  const config = require('./config.js')
   module.exports(require('./config.js'), function (err) {
-    log.error({ err })
+    pino(config.log).error({ err })
     if (err) {
       throw err
     }

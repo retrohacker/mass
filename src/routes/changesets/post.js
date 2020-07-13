@@ -1,8 +1,7 @@
-const log = require('../../log')
 const sql = require('../../sql')
 
 module.exports = (pool) => (request, response, next) => {
-  log.info({ body: request.body }, 'got request')
+  request.log.info({ body: request.body }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads
   const invalid = (msg) => {
@@ -40,10 +39,10 @@ module.exports = (pool) => (request, response, next) => {
     return invalid('stakeholders must be an array of strings')
   }
 
-  log.info({ image, name, stakeholders }, 'creating changeset')
+  request.log.info({ image, name, stakeholders }, 'creating changeset')
   pool.query(sql.insert.changeset, [name, image, stakeholders], (err, res) => {
     if (err) {
-      log.error({ err })
+      request.log.error({ err })
       err.statusCode = 500
       return next(err)
     }
