@@ -101,9 +101,16 @@ test('server should return commit', async t => {
   const commit = t.context.commit
   const url = `http://127.0.0.1:${port}/repositories/${name}/commits/${commit}`
   const resp = await got.get(url).json()
+  t.true(Array.isArray(resp.changesets), 'result included changesets')
+  t.is(typeof resp.created, 'string', 'result included creation timestamp')
+  // Sort the changesets so we can compare them in a deep equal
+  resp.changesets = resp.changesets.sort()
+  // Remove the timestamp because we cant deep equal that
+  delete resp.created
   t.deepEqual({
     digest: commit,
-    parent: null
+    parent: null,
+    changesets: t.context.changesets.map(v => v.uuid).sort()
   }, resp, 'got back a commit object')
 })
 

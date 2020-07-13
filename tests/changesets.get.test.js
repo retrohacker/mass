@@ -31,12 +31,17 @@ test.beforeEach(async t => {
 })
 
 test('server should return uuid on payload', async t => {
-  t.plan(1)
+  t.plan(2)
   const { uuid, body, port } = t.context
   const resp = await got.get(`http://127.0.0.1:${port}/changesets/${uuid}`, {
     throwHttpErrors: false
   }).json()
-  t.deepEqual(resp, body, 'get returns body back after post')
+  t.is(typeof resp.created, 'string', 'result included creation timestamp')
+  delete resp.created
+  t.deepEqual(resp, {
+    uuid,
+    ...body
+  }, 'get returns body back after post')
 })
 
 test('server should 400 on non-existant uuid', async t => {
