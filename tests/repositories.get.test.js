@@ -1,32 +1,10 @@
 const test = require('ava')
-const port = require('get-port')
 const { promisify } = require('util')
-const server = promisify(require('../src/index.js'))
+const util = require('./util.js')
 const got = require('got')
 const uuid = require('uuid')
 const crypto = require('crypto')
 const Aigle = require('aigle')
-const config = () => ({
-  server: {
-    listen: [8000, '0.0.0.0']
-  },
-  db: {
-    user: 'mart',
-    host: 'localhost',
-    database: 'mass',
-    port: 26257
-  }
-})
-
-const getServer = async t => {
-  const c = config()
-  const p = await port()
-  c.server.listen = [p, '0.0.0.0']
-  const s = await server(c)
-  t.context.port = p
-  t.context.server = s
-  return [p, s]
-}
 
 const body = () => ({
   name: uuid.v4(),
@@ -34,21 +12,30 @@ const body = () => ({
   stakeholders: []
 })
 
+test.before(async t => {
+  t.context.config = await util.getServer()
+  t.context.port = t.context.config.server.listen[0]
+})
+
+test.after.always(async () => {
+  util.releaseServer()
+})
+
 test.beforeEach(async t => {
-  const [p] = await getServer(t)
+  const port = t.context.port
   // Create three example changesets so we can test recursion
   const changesets = [body(), body(), body()]
   changesets[0].stakeholders.push(changesets[1].name)
   changesets[1].stakeholders.push(changesets[2].name)
   await Aigle.resolve(changesets).each(async (v) => {
-    const resp = await got.post(`http://127.0.0.1:${p}/changesets`, {
+    const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
       json: v
     }).json()
     t.not(resp.uuid, undefined, 'got uuid back')
     v.uuid = resp.uuid
   })
   // Create repository pointing to changesets
-  const resp = await got.post(`http://127.0.0.1:${p}/repositories`, {
+  const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     json: {
       changeset: changesets[0].name
     }
@@ -59,41 +46,37 @@ test.beforeEach(async t => {
   t.context.commit = resp.head
 })
 
-test.afterEach(async t => {
-  await promisify(t.context.server.close)
-})
-
 test('server should return repository object', async t => {
-  const p = t.context.port
+  const port = t.context.port
   const name = t.context.changesets[0].name
-  const resp = await got.get(`http://127.0.0.1:${p}/repositories/${name}`).json()
+  const resp = await got.get(`http://127.0.0.1:${port}/repositories/${name}`).json()
   t.true(typeof resp.name === 'string', 'got name back')
   t.regex(resp.head || '', /^[0-9a-zA-Z]{64}$/, 'got digest back')
 })
 
 test('server should 404 on missing repository', async t => {
-  const p = t.context.port
+  const port = t.context.port
   const name = uuid.v4()
-  const resp = await got.get(`http://127.0.0.1:${p}/repositories/${name}`, {
+  const resp = await got.get(`http://127.0.0.1:${port}/repositories/${name}`, {
     throwHttpErrors: false
   })
   t.is(resp.statusCode, 404, '404 on non-existant repo')
 })
 
 test('server should return list of repositories', async t => {
-  const p = t.context.port
-  const resp = await got.get(`http://127.0.0.1:${p}/repositories`).json()
+  const port = t.context.port
+  const resp = await got.get(`http://127.0.0.1:${port}/repositories`).json()
   t.true(Array.isArray(resp.repositories), 'got list of repositories back')
   t.true(resp.repositories.length > 1, 'get back at least the one we created')
 })
 
 test('server should return list of commits', async t => {
-  const p = t.context.port
+  const port = t.context.port
   const name = t.context.changesets[0].name
-  const url = `http://127.0.0.1:${p}/repositories/${name}/commits`
+  const url = `http://127.0.0.1:${port}/repositories/${name}/commits`
   const resp = await got.get(url).json()
   t.true(Array.isArray(resp.commits), 'got list of commits back')
-  const repository = await got.get(`http://127.0.0.1:${p}/repositories/${name}`).json()
+  const repository = await got.get(`http://127.0.0.1:${port}/repositories/${name}`).json()
   t.deepEqual([{
     digest: repository.head,
     created: resp.commits[0].created,
@@ -103,9 +86,9 @@ test('server should return list of commits', async t => {
 })
 
 test('server should 404 list of commits for non-existant repo', async t => {
-  const p = t.context.port
+  const port = t.context.port
   const name = uuid.v4()
-  const url = `http://127.0.0.1:${p}/repositories/${name}/commits`
+  const url = `http://127.0.0.1:${port}/repositories/${name}/commits`
   const resp = await got.get(url, {
     throwHttpErrors: false
   })
@@ -113,10 +96,10 @@ test('server should 404 list of commits for non-existant repo', async t => {
 })
 
 test('server should return commit', async t => {
-  const p = t.context.port
+  const port = t.context.port
   const name = t.context.changesets[0].name
   const commit = t.context.commit
-  const url = `http://127.0.0.1:${p}/repositories/${name}/commits/${commit}`
+  const url = `http://127.0.0.1:${port}/repositories/${name}/commits/${commit}`
   const resp = await got.get(url).json()
   t.deepEqual({
     digest: commit,
@@ -124,12 +107,12 @@ test('server should return commit', async t => {
   }, resp, 'got back a commit object')
 })
 
-test.only('server should paginate commits', async t => {
+test('server should paginate commits', async t => {
   // Create our own connection to the database
   const db = promisify(require('../src/db'))
   const pool = await db()
   const root = t.context.commit
-  const p = t.context.port
+  const port = t.context.port
   const name = t.context.changesets[0].name
   t.teardown(async () => await pool.end())
   const digest = () => crypto
@@ -163,7 +146,7 @@ test.only('server should paginate commits', async t => {
   await pool.query(updateQuery, [prev, root])
 
   // Now we have 250 commits to query, make sure our request only returns 100
-  const url = `http://127.0.0.1:${p}/repositories/${name}/commits`
+  const url = `http://127.0.0.1:${port}/repositories/${name}/commits`
   let resp = await got.get(url).json()
   t.true(Array.isArray(resp.commits), 'got list of commits back')
   t.is(resp.commits.length, 100, 'got back 100 entries')

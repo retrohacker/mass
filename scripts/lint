@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+console.time('lint')
 const { spawnSync } = require('child_process')
 const { status } = spawnSync('standard', ['src/*.js', 'src/**/*.js', 'scripts/*', 'tests/*.js'], {
   stdio: 'inherit'
 })
+console.timeEnd('lint')
 process.exit(status)
