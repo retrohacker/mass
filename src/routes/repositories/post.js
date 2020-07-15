@@ -1,19 +1,6 @@
 const sql = require('../../sql')
 const neo = require('neo-async')
-const crypto = require('crypto')
-
-// A determinstic digest generator that works across languages
-// If we just do JSON.stringify and digest that, the digest will depend on the
-// platform's implementation of JSON.stringify, which we don't want.
-const repoDigest = (parent, stakeholders) => {
-  // This character should be safe since we are creating a digest of UUID
-  // values and not user generated strings.
-  let str = parent
-  if (stakeholders.length > 0) {
-    str += '|' + stakeholders.join('|')
-  }
-  return crypto.createHash('sha256').update(str).digest('hex')
-}
+const genDigest = require('../../digest')
 
 module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ body: request.body }, 'got request')
@@ -76,7 +63,7 @@ module.exports = ({ pool }) => (request, response, next) => {
     (res, cb) => {
       // Turn the snapshot of the dependency tree into an initial commit
       const changesets = res.rows.map(r => r.uuid)
-      const digest = repoDigest('null', changesets)
+      const digest = genDigest('null', changesets)
       request.log.info({
         changesets,
         digest

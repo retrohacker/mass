@@ -39,6 +39,7 @@ module.exports = function init (conf, cb) {
       server.get('/repositories/:name', require('./routes/repositories/get-name.js')(config))
       server.get('/repositories/:name/commits', require('./routes/repositories/get-commits.js')(config))
       server.get('/repositories/:name/commits/:commit', require('./routes/repositories/get-commits-commit.js')(config))
+      server.get('/campaigns/:uuid', require('./routes/campaigns/get-uuid.js')(config))
       cb()
     }
   ], function (e) {
