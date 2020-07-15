@@ -2,7 +2,7 @@ WITH RECURSIVE get_deps(name, uuid, stakeholders, created) AS (
   (
     SELECT DISTINCT ON (name) name, uuid, stakeholders, created
     FROM changesets
-    WHERE name = $1
+    WHERE uuid = $1
     ORDER BY name, created
   )
   UNION ALL

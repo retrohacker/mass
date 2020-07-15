@@ -42,6 +42,7 @@ module.exports = (pool) => (request, response, next) => {
   request.log.info({ changeset }, 'creating repository')
 
   let digest
+  let uuid
   neo.waterfall([
     (cb) => {
       // Ensure the repository doesn't already exist
@@ -64,12 +65,13 @@ module.exports = (pool) => (request, response, next) => {
         err.invalid = true
         return cb(err)
       }
+      uuid = resp.rows[0].uuid
       return cb()
     },
     (cb) => {
       // This query grabs the latest changeset under a given name and the
       // latest changeset for each dependency in it's dependency tree.
-      pool.query(sql.select.changesetDeps, [changeset], cb)
+      pool.query(sql.select.changesetDeps, [uuid], cb)
     },
     (res, cb) => {
       // Turn the snapshot of the dependency tree into an initial commit
