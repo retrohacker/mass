@@ -1,6 +1,7 @@
 const test = require('ava')
 const got = require('got')
 const util = require('./util.js')
+const { promisify } = require('util')
 
 const body = () => ({
   name: 'foobar',
@@ -9,12 +10,12 @@ const body = () => ({
 })
 
 test.before(async t => {
-  t.context.config = await util.getServer()
+  t.context = { ...t.context, ...(await util.getServer()) }
   t.context.port = t.context.config.server.listen[0]
 })
 
-test.after.always(async () => {
-  util.releaseServer()
+test.after.always(async (t) => {
+  await promisify(t.context.server.close)
 })
 
 test('server should 400 on missing body', async t => {

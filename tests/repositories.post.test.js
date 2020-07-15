@@ -2,6 +2,7 @@ const test = require('ava')
 const util = require('./util.js')
 const got = require('got')
 const uuid = require('uuid')
+const { promisify } = require('util')
 const Aigle = require('aigle')
 
 const body = () => ({
@@ -11,12 +12,12 @@ const body = () => ({
 })
 
 test.before(async t => {
-  t.context.config = await util.getServer()
+  t.context = { ...t.context, ...(await util.getServer()) }
   t.context.port = t.context.config.server.listen[0]
 })
 
-test.after.always(async () => {
-  util.releaseServer()
+test.after.always(async (t) => {
+  await promisify(t.context.server.close)
 })
 
 test.beforeEach(async t => {

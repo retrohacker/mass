@@ -14,12 +14,12 @@ const body = () => ({
 })
 
 test.before(async t => {
-  t.context.config = await util.getServer()
+  t.context = { ...t.context, ...(await util.getServer()) }
   t.context.port = t.context.config.server.listen[0]
 })
 
-test.after.always(async () => {
-  util.releaseServer()
+test.after.always(async (t) => {
+  await promisify(t.context.server.close)
 })
 
 test.beforeEach(async t => {
