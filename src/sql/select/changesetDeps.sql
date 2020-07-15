@@ -10,6 +10,6 @@ WITH RECURSIVE get_deps(name, uuid, stakeholders, created) AS (
     FROM changesets c, get_deps d
     WHERE c.name = ANY(d.stakeholders)
 )
-SELECT DISTINCT ON (name) name, uuid
+SELECT DISTINCT ON (name) name, uuid, stakeholders
 FROM get_deps
 ORDER BY name, created
