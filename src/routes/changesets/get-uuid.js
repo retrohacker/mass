@@ -1,7 +1,7 @@
 const sql = require('../../sql')
 const isUUID = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
-module.exports = (pool) => (request, response, next) => {
+module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ params: request.params }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads

@@ -29,15 +29,16 @@ module.exports = function init (conf, cb) {
       server.listen(...config.server.listen, cb)
     },
     (cb) => {
+      const config = { pool, log }
       // load routes
-      server.post('/changesets', require('./routes/changesets/post.js')(pool))
-      server.get('/changesets/:uuid', require('./routes/changesets/get-uuid.js')(pool))
-      server.get('/changesets', require('./routes/changesets/get.js')(pool))
-      server.post('/repositories', require('./routes/repositories/post.js')(pool))
-      server.get('/repositories', require('./routes/repositories/get.js')(pool))
-      server.get('/repositories/:name', require('./routes/repositories/get-name.js')(pool))
-      server.get('/repositories/:name/commits', require('./routes/repositories/get-commits.js')(pool))
-      server.get('/repositories/:name/commits/:commit', require('./routes/repositories/get-commits-commit.js')(pool))
+      server.post('/changesets', require('./routes/changesets/post.js')(config))
+      server.get('/changesets/:uuid', require('./routes/changesets/get-uuid.js')(config))
+      server.get('/changesets', require('./routes/changesets/get.js')(config))
+      server.post('/repositories', require('./routes/repositories/post.js')(config))
+      server.get('/repositories', require('./routes/repositories/get.js')(config))
+      server.get('/repositories/:name', require('./routes/repositories/get-name.js')(config))
+      server.get('/repositories/:name/commits', require('./routes/repositories/get-commits.js')(config))
+      server.get('/repositories/:name/commits/:commit', require('./routes/repositories/get-commits-commit.js')(config))
       cb()
     }
   ], function (e) {

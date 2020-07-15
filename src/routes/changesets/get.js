@@ -1,6 +1,6 @@
 const sql = require('../../sql')
 
-module.exports = (pool) => (request, response, next) => {
+module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ query: request.query }, 'got request')
   const { name } = request.query
 

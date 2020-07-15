@@ -1,7 +1,7 @@
 const neo = require('neo-async')
 const sql = require('../../sql')
 
-module.exports = (pool) => (request, response, next) => {
+module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ params: request.params }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads

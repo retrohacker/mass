@@ -1,6 +1,6 @@
 const sql = require('../../sql')
 
-module.exports = (pool) => (request, response, next) => {
+module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ body: request.body }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads

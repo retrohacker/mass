@@ -15,7 +15,7 @@ const repoDigest = (parent, stakeholders) => {
   return crypto.createHash('sha256').update(str).digest('hex')
 }
 
-module.exports = (pool) => (request, response, next) => {
+module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ body: request.body }, 'got request')
 
   // Convienence wrapper for rejecting invalid payloads
