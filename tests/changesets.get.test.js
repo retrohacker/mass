@@ -16,7 +16,7 @@ test.before(async t => {
 })
 
 test.after.always(async (t) => {
-  await promisify(t.context.server.close)
+  await promisify(t.context.close)
 })
 
 test.beforeEach(async t => {

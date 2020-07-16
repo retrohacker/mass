@@ -32,7 +32,7 @@ const getServer = async () => {
   const server = await main(config)
 
   // Return our config
-  return { config, server }
+  return { config, ...server }
 }
 
 module.exports = { getServer }
