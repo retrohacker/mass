@@ -1,0 +1,5 @@
+export stake
+
+fs stake() {
+  label "middle" "2.7182"
+}
