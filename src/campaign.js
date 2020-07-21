@@ -12,21 +12,42 @@ const genDigest = require('./digest')
 let running = false
 let rerun = false
 
+// Keep track of where we have been invoked with a callback that expects to be
+// called after a complete run of a campaign. For every invocation that happens
+// while campaign is already running, we queue it up in the next array. When a
+// campaign ends, we set current to next and set next to an empty array. We do
+// this so that a route can call campaign and, when the callback is invoked, it
+// knows a complete campaign has been run. If we only kept a single array of
+// callbacks, anything that called campaign while it was already running risks
+// having it's callback invoked before the state it set in the database had
+// been considered in a campaign.
+const callbacks = {
+  current: [],
+  next: []
+}
+
 // This function is responsible for ensuring only one invocation of campaign
 // is running in our process at a time. Since it is idempotent and contextless,
 // it will queue at most one additional run of itself up, from then on it will
 // ignore all future invocations.
-function shouldRun () {
+function shouldRun (cb) {
   if (running) {
-    // Make sure the function will re-invoke itself once done
+    // Make sure the function will re-invoke itself once done and invoke our
+    // callback, if provided, after it completes an entire campaign
+    if (cb) callbacks.next.push(cb)
     rerun = true
     // Dedupe this invocation
     return false
   }
-  // Set ourselves to running
+  // Set ourselves to running and make sure our callback will be invoked when
+  // the campaign finishes
   running = true
-  // Make sure we don't loop indefinitely
+
+  // Keep ourselves from looping indefinitely
   rerun = false
+
+  // If we were given a callback, invoke it when we are done
+  if (cb) callbacks.current.push(cb)
   return true
 }
 
@@ -117,14 +138,16 @@ function generateCommit (client, log, pr, cb) {
   })
 }
 
-module.exports = function campaign (pool, log) {
-  log.info({ running, rerun }, 'invoked campaign driver')
+module.exports = function campaign (pool, log, cb) {
+  log.info({ running, rerun, callback: cb !== undefined }, 'invoked campaign driver')
+
   // Check to see if we should run
-  if (!shouldRun()) {
+  if (!shouldRun(cb)) {
     log.info('campaign driver already running')
     // If not abort
     return undefined
   }
+
   // We are the only copy of ourselves running now
 
   // Kick off our transaction
@@ -216,16 +239,37 @@ module.exports = function campaign (pool, log) {
       cb()
     }
   ], err => {
-    // If we run into an error, log it and retry
-    if (err) {
-      log.error({ err }, 'failed to run campaign, retrying')
-      rerun = true
-    }
-
     // Cleanup any state we created during the campaign
-    done(state, () => {
+    return done(state, () => {
+      // If we encountered an error above, we retry the campaign.
+      if (err) {
+        log.error({ err }, 'failed to run campaign, retrying')
+        rerun = true
+      } else {
+        // If we didn't encounter an error we invoke each of our callbacks
+        callbacks.current.forEach(cb => cb())
+      }
+
+      // If we are rerunning because of an error, this means all the callbacks
+      // in next can be called if the next campaign succeeds.  Likewise all the
+      // current callbacks will need to be called at that point as well. So we
+      // merge the arrays if we saw an error. If we are rerunning without an
+      // error it means all our current callbacks have been invoked above.
+      // If we aren't rerunning then clear our callback array.
+      if (rerun && err) {
+        callbacks.current = callbacks.current.concat(callbacks.next)
+      } else if (rerun) {
+        callbacks.current = callbacks.next
+      } else {
+        callbacks.current = []
+      }
+
+      // Next should always start fresh
+      callbacks.next = []
+
       // Relase the mutex and, if rerun is true, kick off another campaign
       running = false
+
       if (rerun) {
         return campaign(pool, log)
       }

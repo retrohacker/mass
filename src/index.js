@@ -14,13 +14,6 @@ module.exports = function init (conf, cb) {
   }))
 
   let pool
-  const result = {}
-  result.close = done => {
-    neo.parallel([
-      (cb) => server.close(cb),
-      (cb) => pool ? pool.end(cb) : cb()
-    ], done)
-  }
   neo.waterfall([
     (cb) => db(config, cb),
     (p, cb) => {
@@ -43,6 +36,13 @@ module.exports = function init (conf, cb) {
       cb()
     }
   ], function (e) {
+    const result = { pool, log, server }
+    result.close = done => {
+      neo.parallel([
+        (cb) => server.close(cb),
+        (cb) => pool ? pool.end(cb) : cb()
+      ], done)
+    }
     cb(e, result)
   })
 }

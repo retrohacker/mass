@@ -15,7 +15,7 @@ test.before(async t => {
 })
 
 test.after.always(async (t) => {
-  await promisify(t.context.server.close)
+  await promisify(t.context.close)
 })
 
 test('server should 400 on missing body', async t => {
