@@ -13,7 +13,7 @@ let running = false
 let rerun = false
 
 // Keep track of where we have been invoked with a callback that expects to be
-// called after a complete run of a campaign. For every invokation that happens
+// called after a complete run of a campaign. For every invocation that happens
 // while campaign is already running, we queue it up in the next array. When a
 // campaign ends, we set current to next and set next to an empty array. We do
 // this so that a route can call campaign and, when the callback is invoked, it
@@ -43,7 +43,7 @@ function shouldRun (cb) {
   // the campaign finishes
   running = true
 
-  // Keep ourselves from looping indefinately
+  // Keep ourselves from looping indefinitely
   rerun = false
 
   // If we were given a callback, invoke it when we are done
