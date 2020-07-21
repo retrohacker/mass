@@ -2,7 +2,7 @@
 
 console.time('test')
 const { spawnSync } = require('child_process')
-const { status } = spawnSync('ava', ['-c100', '-t', 'tests/*.test.js'], {
+const { status } = spawnSync('ava', ['-c100', 'tests/*.test.js'], {
   stdio: 'inherit'
 })
 console.timeEnd('test')
