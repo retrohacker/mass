@@ -1,0 +1,8 @@
+fs build() {
+  copy fs {
+    local "./" with option {
+      includePatterns "module.hlb"
+    }
+  } "/" "/"
+  dockerPush "localhost:5000/mass/top"
+}
