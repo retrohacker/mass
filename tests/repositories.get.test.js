@@ -2,13 +2,12 @@ const test = require('ava')
 const { promisify } = require('util')
 const util = require('./util.js')
 const got = require('got')
-const uuid = require('uuid')
 const crypto = require('crypto')
 const Aigle = require('aigle')
 const pino = require('pino')
 
 const body = () => ({
-  name: uuid.v4(),
+  name: util.uuid(),
   image: 'fizzbuzz',
   stakeholders: []
 })
@@ -38,6 +37,7 @@ test.beforeEach(async t => {
   // Create repository pointing to changesets
   const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     json: {
+      artifactName: changesets[0].name,
       changeset: changesets[0].name
     }
   }).json()
@@ -57,7 +57,7 @@ test('server should return repository object', async t => {
 
 test('server should 404 on missing repository', async t => {
   const port = t.context.port
-  const name = uuid.v4()
+  const name = util.uuid()
   const resp = await got.get(`http://127.0.0.1:${port}/repositories/${name}`, {
     throwHttpErrors: false
   })
@@ -88,7 +88,7 @@ test('server should return list of commits', async t => {
 
 test('server should 404 list of commits for non-existant repo', async t => {
   const port = t.context.port
-  const name = uuid.v4()
+  const name = util.uuid()
   const url = `http://127.0.0.1:${port}/repositories/${name}/commits`
   const resp = await got.get(url, {
     throwHttpErrors: false
@@ -127,7 +127,7 @@ test('server should paginate commits', async t => {
   t.teardown(async () => await pool.end())
   const digest = () => crypto
     .createHash('sha256')
-    .update(uuid.v4())
+    .update(util.uuid())
     .digest('hex')
   // Insert a few hundred commits :upside_smile:
   // Generate query

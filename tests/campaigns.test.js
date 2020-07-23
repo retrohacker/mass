@@ -1,12 +1,11 @@
 const test = require('ava')
 const { promisify } = require('util')
 const got = require('got')
-const uuid = require('uuid')
 const util = require('./util.js')
 const campaign = require('../src/campaign.js')
 
 const body = () => ({
-  name: uuid.v4(),
+  name: util.uuid(),
   image: 'fizzbuzz',
   stakeholders: []
 })
@@ -26,6 +25,7 @@ const mkChangeset = async (port, b) => {
 const mkRepository = async (port, name) => {
   return await got.post(`http://127.0.0.1:${port}/repositories`, {
     json: {
+      artifactName: name,
       changeset: name
     }
   }).json()

@@ -11,7 +11,7 @@
     "babel": true
   },
   "husky": {
-    "pre-commit": "npm lint && npm test"
+    "pre-commit": "npm lint"
   },
   "dependencies": {
     "glob": "^7.1.6",
@@ -27,7 +27,6 @@
     "@ava/babel": "^1.0.1",
     "aigle": "^1.14.1",
     "ava": "^3.8.2",
-    "execa": "^4.0.3",
     "get-port": "^5.1.1",
     "got": "^11.1.4",
     "husky": "^4.2.5",

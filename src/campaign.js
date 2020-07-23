@@ -8,6 +8,7 @@
 const neo = require('neo-async')
 const sql = require('./sql')
 const genDigest = require('./digest')
+const hlb = require('./hlb')
 
 let running = false
 let rerun = false
@@ -58,10 +59,11 @@ function shouldRun (cb) {
  * Returns:
  * {
  *   repository: STRING,
+ *   artifactName: STRING,
  *   changeset: STRING,
  *   digest: STRING,
  *   parent: STRING,
- *   changesets: [ STRING ]
+ *   changesets: [ { uuid: STRING, name: STRING, image: STRING } ]
  * }
  */
 function generateCommit (client, log, pr, cb) {
@@ -119,14 +121,17 @@ function generateCommit (client, log, pr, cb) {
     result.forEach(v => delete v.visited)
     log.info({ result }, 'finished sweep')
 
-    // TODO: test for dropping and adding dependencies
-
-    const changesets = result.map(v => v.uuid)
+    const changesets = result.map(v => ({
+      uuid: v.uuid,
+      name: v.name,
+      image: v.image
+    }))
 
     // Generate commit
     const commit = {
       repository: pr.repository,
       changeset: pr.changeset,
+      artifactName: repo.artifactname,
       parent: repo.head,
       digest: genDigest(repo.head, changesets),
       changesets
@@ -191,11 +196,14 @@ module.exports = function campaign (pool, log, cb) {
         state.client.query(sql.insert.commit, [
           commit.parent,
           commit.digest,
-          commit.changesets
+          commit.changesets.map(v => v.uuid)
         ], err => cb(err))
       }, err => cb(err))
     },
-    // TODO: generate HLB, build image, and update commit w/ image
+    (cb) => {
+      log.info('building images')
+      neo.each(state.commits, hlb.build, err => cb(err))
+    },
     (cb) => {
       log.info('generated commits')
       // Update our repository heads to point to the new commits
