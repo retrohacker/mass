@@ -1,12 +1,11 @@
 const test = require('ava')
 const util = require('./util.js')
 const got = require('got')
-const uuid = require('uuid')
 const { promisify } = require('util')
 const Aigle = require('aigle')
 
 const body = () => ({
-  name: uuid.v4(),
+  name: util.uuid(),
   image: 'fizzbuzz',
   stakeholders: []
 })
@@ -50,7 +49,9 @@ test('server should 400 on missing changeset', async t => {
   const { port } = t.context
   const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     throwHttpErrors: false,
-    json: {}
+    json: {
+      artifactName: t.context.changesets[0].name
+    }
   })
   t.plan(1)
   t.is(400, resp.statusCode)
@@ -61,7 +62,33 @@ test('server should 400 on non-string changeset', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     throwHttpErrors: false,
     json: {
+      artifactName: t.context.changesets[0].name,
       changeset: 10
+    }
+  })
+  t.plan(1)
+  t.is(400, resp.statusCode)
+})
+
+test('server should 400 on missing artifactName', async t => {
+  const { port } = t.context
+  const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
+    throwHttpErrors: false,
+    json: {
+      changeset: t.context.changesets[0].name
+    }
+  })
+  t.plan(1)
+  t.is(400, resp.statusCode)
+})
+
+test('server should 400 on non-string artifactName', async t => {
+  const { port } = t.context
+  const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
+    throwHttpErrors: false,
+    json: {
+      artifactName: 10,
+      changeset: t.context.changesets[0].name
     }
   })
   t.plan(1)
@@ -73,6 +100,7 @@ test('server should 400 on non-existant changeset', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     throwHttpErrors: false,
     json: {
+      artifactName: t.context.changesets[0].name,
       changeset: 'does-not-exist'
     }
   })
@@ -84,6 +112,7 @@ test('server should return repository obj', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     throwHttpErrors: false,
     json: {
+      artifactName: t.context.changesets[0].name,
       changeset: t.context.changesets[0].name
     }
   }).json()
@@ -96,13 +125,34 @@ test('server should 400 on recreating changeset', async t => {
   let resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     throwHttpErrors: false,
     json: {
+      artifactName: t.context.changesets[0].name,
       changeset: t.context.changesets[0].name // no deps
     }
   })
   resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
     throwHttpErrors: false,
     json: {
+      artifactName: t.context.changesets[1].name,
       changeset: t.context.changesets[0].name // no deps
+    }
+  })
+  t.is(400, resp.statusCode)
+})
+
+test('server should 400 on reusing artifactName', async t => {
+  const { port } = t.context
+  let resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
+    throwHttpErrors: false,
+    json: {
+      artifactName: t.context.changesets[0].name,
+      changeset: t.context.changesets[0].name // no deps
+    }
+  })
+  resp = await got.post(`http://127.0.0.1:${port}/repositories`, {
+    throwHttpErrors: false,
+    json: {
+      artifactName: t.context.changesets[0].name,
+      changeset: t.context.changesets[1].name // no deps
     }
   })
   t.is(400, resp.statusCode)

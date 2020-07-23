@@ -1,3 +1,3 @@
-INSERT INTO repositories(name, head)
-VALUES($1, $2)
+INSERT INTO repositories(name, artifactName, head)
+VALUES($1, $2, $3)
 RETURNING *

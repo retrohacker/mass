@@ -1,6 +1,9 @@
 const port = require('get-port')
 const { promisify } = require('util')
+const hlb = require('../src/hlb')
+hlb.build = (commit, cb) => cb() // stub out build
 const main = promisify(require('../src/index.js'))
+const uuid = require('uuid')
 
 // Single shared config for all servers. Tests that want to test configuration
 // settings must stand up their own dedicated server instance.
@@ -35,4 +38,7 @@ const getServer = async () => {
   return { config, ...server }
 }
 
-module.exports = { getServer }
+// Remove all dashes from a uuid and ensure it starts with a letter
+const safeUuid = () => `uuid${uuid.v4().split('-').join('')}`
+
+module.exports = { getServer, uuid: safeUuid }

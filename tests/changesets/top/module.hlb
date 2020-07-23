@@ -1,5 +1,0 @@
-export stake
-
-fs stake() {
-  label "top" "6.6261"
-}
