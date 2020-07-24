@@ -1,4 +1,5 @@
 const sql = require('../../sql')
+const hlb = require('../../hlb')
 const neo = require('neo-async')
 const genDigest = require('../../digest')
 
@@ -36,6 +37,7 @@ module.exports = ({ pool }) => (request, response, next) => {
 
   let digest
   let uuid
+  let changesets
   neo.waterfall([
     (cb) => {
       // Ensure the repository doesn't already exist
@@ -77,13 +79,14 @@ module.exports = ({ pool }) => (request, response, next) => {
     },
     (res, cb) => {
       // Turn the snapshot of the dependency tree into an initial commit
-      const changesets = res.rows.map(r => r.uuid)
-      const digest = genDigest('null', changesets)
+      changesets = res.rows
+      const uuids = changesets.map(v => v.uuid)
+      const digest = genDigest('null', uuids)
       request.log.info({
-        changesets,
+        changesets: uuids,
         digest
       }, 'generating commit')
-      pool.query(sql.insert.commit, [null, digest, changesets], cb)
+      pool.query(sql.insert.commit, [null, digest, uuids], cb)
     },
     (res, cb) => {
       digest = res.rows[0].digest
@@ -103,5 +106,12 @@ module.exports = ({ pool }) => (request, response, next) => {
     response.status(201)
     response.send({ name: changeset, head: digest })
     next()
+
+    // Build the image for the commit we just generated outside the
+    // request/response lifecycle
+    hlb.build({
+      artifactName,
+      changesets
+    }, () => {})
   })
 }
