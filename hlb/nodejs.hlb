@@ -1,0 +1,94 @@
+export build
+
+fs build() {
+  extracted "12.18.3"
+}
+
+# Verifies that the nodejs binary is symlinked correctly and executable.
+#
+# @return a leftover filesystem. do not use.
+
+# Returns a filesystem containing `node.tar.gz`, a tarball of nodejs downloaded
+# from nodejs.org.
+#
+# @param version the version of nodejs.
+# @return a filesystem containing `node.tar.gz`.
+fs tarball(string version) {
+	http string {
+		format "https://nodejs.org/dist/v%s/node-v%s-linux-x64.tar.gz" version version
+	} with option {
+		filename "node.tar.gz"
+	}
+}
+
+# Returns a filesystem containing `node.tar.gz.asc`, a detached gpg signature
+# for a nodejs tarball downloaded from nodejs.org.
+#
+# @param version the version of nodejs.
+# @return a filesystem containing `node.tar.gz.asc`.
+fs asc(string version) {
+	http string {
+		format "https://nodejs.org/dist/v%s/SHASUMS256.txt.asc" version
+	} with option {
+		filename "node.tar.gz.asc"
+	}
+}
+
+# Fetches and verifies the nodejs tarball from nodejs.org and then extracts
+# it into a scratch mount.
+#
+# @param version the version of nodejs.
+# @return a leftover filesystem. do not use.
+fs fetch(string version) {
+	image "alpine"
+	run "apk add -U gnupg"
+
+	# Trust the GPG release keys of nodejs.org.
+	run <<~GPG
+                set -ex &&
+                for key in
+                        94AE36675C464D64BAFA68DD7434390BDBE9B9C5
+                        FD3A5288F042B6850C66B31F09FE44734EB7990E
+                        71DCFD284A79C3B38668286BC97EC7A07EDE3FC1
+                        DD8F2338BAE7501E3DD5AC78C273792F7D83545D
+                        C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8
+                        B9AE9905FFD7803F25714661B63B535A4C206CA9
+                        56730D5401028683275BD23C23EFEFE93C4CFFFE
+                        77984A986EBC2AA786BC0F66B01FBB92821C587A
+                        8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600
+                        4ED778F539E3634C779C87C6D7062848A1AB005C
+                        A48C2BEE680E841632CD4E44F07496B3EB3C1762
+                        B9E2F5981AA6E0CD28160D9FF13993A75599653C
+                ; do
+                        gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" ||
+                        gpg --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" ||
+                        gpg --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ;
+                done
+	GPG
+
+	# Verify the nodejs tarball using the detached GPG signature.
+	run "gpg --verify /in/node.tar.gz.asc" with option {
+		mount fs {
+			scratch
+			copy fs { tarball version; } "/" "/"
+			copy fs { asc version; } "/" "/"
+		} "/in" with readonly
+	}
+	mkdir "/out" 0o775
+
+	# Extract the tarball into a scratch mount.
+	run <<~TAR
+		tar -xzf /in/node.tar.gz -C /out/ --strip-components=1 --no-same-owner &&
+		cd /out/bin && ln -s ./node ./nodejs
+	TAR with option {
+		mount fs {
+			tarball version
+		} "/in" with readonly
+
+		# A filesystem containing a nodejs installation. This should be extracted
+		# into `/usr/local`.
+		#
+		# @return a filesystem containing a nodejs installation.
+		mount scratch "/out" as extracted
+	}
+}

@@ -1,0 +1,23 @@
+import baseos "./baseos.hlb"
+import hlb "./hlb.hlb"
+import nodejs "./nodejs.hlb"
+import project "./project.hlb"
+
+import titus from fs {
+  image "dockerregistry.test.netflix.net:7002/mart/titus.hlb"
+}
+
+fs build() {
+  baseos.build
+  copy nodejs.build "/" "/" with option { createDestPath; }
+  project.build
+  copy hlb.build "hlb-linux-amd64" "/bin/hlb"
+}
+
+fs publish() {
+  build
+  titus.registryPush string {
+    format "mart/mass:%s" string { localRun "date +%s"; }
+  }
+  titus.registryPush "mart/mass:latest"
+}

@@ -1,0 +1,197 @@
+application: mass
+artifacts:
+- name: mart/mass
+  reference: mart/mass
+  tagVersionStrategy: increasing-tag
+  type: docker
+environments:
+- constraints: []
+  name: testing
+  notifications: []
+  resources:
+  - kind: ec2/application-load-balancer@v1.1
+    metadata: {}
+    spec:
+      dependencies:
+        securityGroupNames:
+        - mass-elb
+        - nf-datacenter-elb
+      idleTimeout: PT1M
+      internal: true
+      listeners:
+      - defaultActions:
+        - order: 1
+          redirectConfig:
+            host: '#{host}'
+            path: /#{path}
+            port: "443"
+            protocol: HTTPS
+            query: '#{query}'
+            statusCode: HTTP_302
+          type: redirect
+        port: 80
+        protocol: HTTP
+        rules: []
+      - certificateArn: arn:aws:iam::179727101194:server-certificate/mass.us-east-1.test.netflix.net-DigiCertSHA2SecureServerCA-20200728-20210728
+        defaultActions:
+        - order: 1
+          targetGroupName: mass-targetgroup
+          type: forward
+        port: 443
+        protocol: HTTPS
+        rules: []
+      locations:
+        account: test
+        regions:
+        - name: us-east-1
+        - name: us-west-2
+        - name: eu-west-1
+        subnet: internal (vpc0)
+        vpc: vpc0
+      moniker:
+        app: mass
+      overrides:
+        eu-west-1:
+          listeners:
+          - defaultActions:
+            - order: 1
+              redirectConfig:
+                host: '#{host}'
+                path: /#{path}
+                port: "443"
+                protocol: HTTPS
+                query: '#{query}'
+                statusCode: HTTP_302
+              type: redirect
+            port: 80
+            protocol: HTTP
+            rules: []
+          - certificateArn: arn:aws:iam::179727101194:server-certificate/mass.eu-west-1.test.netflix.net-DigiCertSHA2SecureServerCA-20200728-20210728
+            defaultActions:
+            - order: 1
+              targetGroupName: mass-targetgroup
+              type: forward
+            port: 443
+            protocol: HTTPS
+            rules: []
+        us-west-2:
+          listeners:
+          - defaultActions:
+            - order: 1
+              redirectConfig:
+                host: '#{host}'
+                path: /#{path}
+                port: "443"
+                protocol: HTTPS
+                query: '#{query}'
+                statusCode: HTTP_302
+              type: redirect
+            port: 80
+            protocol: HTTP
+            rules: []
+          - certificateArn: arn:aws:iam::179727101194:server-certificate/mass.us-west-2.test.netflix.net-DigiCertSHA2SecureServerCA-20200728-20210728
+            defaultActions:
+            - order: 1
+              targetGroupName: mass-targetgroup
+              type: forward
+            port: 443
+            protocol: HTTPS
+            rules: []
+      targetGroups:
+      - attributes:
+          deregistrationDelay: 300
+          slowStartDurationSeconds: 0
+          stickinessDuration: 8400
+          stickinessEnabled: false
+          stickinessType: lb_cookie
+        healthCheckEnabled: true
+        healthCheckHttpCode: 200-299
+        healthCheckInterval: PT10S
+        healthCheckPath: /healthcheck
+        healthCheckPort: 7001
+        healthCheckProtocol: HTTP
+        healthCheckTimeout: PT5S
+        healthyThresholdCount: 10
+        name: mass-targetgroup
+        port: 7001
+        protocol: HTTP
+        targetType: ip
+        unhealthyThresholdCount: 2
+  - kind: titus/cluster@v1
+    metadata: {}
+    spec:
+      capacity:
+        desired: 4
+        max: 4
+        min: 4
+      constraints:
+        hard: {}
+        soft: {}
+      container:
+        reference: mart/mass
+      dependencies:
+        securityGroupNames:
+        - nf-infrastructure
+        - mass
+        - nf-datacenter
+        targetGroups:
+        - mass-targetgroup
+      deployWith:
+        strategy: red-black
+        waitForInstancesUp: PT30M
+      env:
+        MASS_DB_HOST: crdb_mart.cluster.us-east-1.cdetest.netflix.net
+        MASS_DB_PORT: "7001"
+      locations:
+        account: titustestvpc
+        regions:
+        - name: us-east-1
+        - name: us-west-2
+        - name: eu-west-1
+        vpc: vpc0
+      moniker:
+        app: mass
+      overrides:
+        eu-west-1:
+          env:
+            MASS_DB_HOST: crdb_mart.cluster.eu-west-1.cdetest.netflix.net
+            MASS_DB_PORT: "7001"
+        us-west-2:
+          env:
+            MASS_DB_HOST: crdb_mart.cluster.us-west-2.cdetest.netflix.net
+            MASS_DB_PORT: "7001"
+  - kind: ec2/security-group@v1
+    metadata: {}
+    spec:
+      description: Security Group for mass
+      inboundRules:
+      - name: mass-elb
+        portRange:
+          endPort: 7001
+          startPort: 7001
+        protocol: TCP
+      locations:
+        account: test
+        regions:
+        - name: us-east-1
+        - name: us-west-2
+        - name: eu-west-1
+        vpc: vpc0
+      moniker:
+        app: mass
+  - kind: ec2/security-group@v1
+    metadata: {}
+    spec:
+      description: Application ELB Security Group for mass
+      inboundRules: []
+      locations:
+        account: test
+        regions:
+        - name: us-east-1
+        - name: us-west-2
+        - name: eu-west-1
+        vpc: vpc0
+      moniker:
+        app: mass
+        stack: elb
+serviceAccount: managed-artifacts@netflix.com
