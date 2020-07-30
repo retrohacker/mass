@@ -3,3 +3,4 @@ set -ex
 
 time standard --fix src/*.js src/**/*.js tests/*.js
 time find hlb/*.hlb -print0 | xargs -0 -I{} hlb format -w "{}"
+time shellcheck scripts/*
