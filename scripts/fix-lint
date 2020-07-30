@@ -1,9 +1,5 @@
-#!/usr/bin/env node
+#!/bin/bash
+set -ex
 
-console.time('fix-lint')
-const { spawnSync } = require('child_process')
-const { status } = spawnSync('standard', ['--fix', 'src/*.js', 'src/**/*.js', 'scripts/*', 'tests/*.js'], {
-  stdio: 'inherit'
-})
-console.timeEnd('fix-lint')
-process.exit(status)
+time standard --fix src/*.js src/**/*.js tests/*.js
+time find hlb/*.hlb -print0 | xargs -0 -I{} hlb format -w "{}"

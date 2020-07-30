@@ -1,9 +1,4 @@
-#!/usr/bin/env node
+#!/bin/bash
+set -ex
 
-console.time('test')
-const { spawnSync } = require('child_process')
-const { status } = spawnSync('ava', ['-c100', 'tests/*.test.js'], {
-  stdio: 'inherit'
-})
-console.timeEnd('test')
-process.exit(status)
+time ava -c100 tests/*.test.js
