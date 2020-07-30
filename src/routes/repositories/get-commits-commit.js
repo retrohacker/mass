@@ -1,37 +1,31 @@
+const errors = require('restify-errors')
 const sql = require('../../sql')
 const isDigest = /^[0-9a-zA-Z]{64}$/
 
 module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ params: request.params }, 'got request')
 
-  // Convienence wrapper for rejecting invalid payloads
-  const invalid = (msg) => {
-    const err = new Error(msg)
-    err.statusCode = 400
-    return next(err)
-  }
-
   const { name, commit } = request.params
 
   // First validate our payload
   if (!name) {
-    return invalid('expected name param')
+    return next(new errors.BadRequestError('expected name param'))
   }
 
   if ((typeof name) !== 'string') {
-    return invalid('expected name to be string')
+    return next(new errors.BadRequestError('expected name to be string'))
   }
 
   if (!commit) {
-    return invalid('expected commit param')
+    return next(new errors.BadRequestError('expected commit param'))
   }
 
   if ((typeof commit) !== 'string') {
-    return invalid('expected commit to be string')
+    return next(new errors.BadRequestError('expected commit to be string'))
   }
 
   if (!isDigest.test(commit)) {
-    return invalid('expected commit to be sha256 string')
+    return next(new errors.BadRequestError('expected commit to be sha256 string'))
   }
 
   request.log.info({ name, commit }, 'query')
@@ -43,13 +37,10 @@ module.exports = ({ pool }) => (request, response, next) => {
   pool.query(sql.select.commit, [commit], (err, res) => {
     if (err) {
       request.log.error({ err })
-      err.statusCode = 500
-      return next(err)
+      return next(new errors.InternalServerError(`${request.id}`))
     }
     if (res.rows.length === 0) {
-      const err = new Error('Not Found')
-      err.statusCode = 404
-      return next(err)
+      return next(new errors.NotFoundError(`Commit ${commit} not found`))
     }
     response.header('content-type', 'application/json')
     response.status(201)

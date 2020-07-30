@@ -12,6 +12,20 @@ module.exports = function init (conf, cb) {
   server.use(restify.plugins.queryParser({
     mapParams: false
   }))
+  server.use(restify.plugins.requestLogger())
+  server.use((request, response, next) => {
+    request.log.info({
+      route: request.getRoute().spec,
+      href: request.href()
+    }, 'received request')
+    next()
+  })
+  server.on('after', (request, response) => {
+    request.log.info({
+      route: request.getRoute().spec,
+      href: request.href()
+    }, 'handled request')
+  })
 
   let pool
   neo.waterfall([
@@ -30,6 +44,10 @@ module.exports = function init (conf, cb) {
       server.get('/repositories/:name/commits/:commit', require('./routes/repositories/get-commits-commit.js')(c))
       server.get('/campaigns/:uuid', require('./routes/campaigns/get-uuid.js')(c))
       server.listen(...config.server.listen, cb)
+      server.on('restifyError', (request, response, err, next) => {
+        request.log.error({ err })
+        next()
+      })
     }
   ], function (e) {
     if (e) {

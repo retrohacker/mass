@@ -23,6 +23,7 @@
     "pino": "^6.3.0",
     "restify": "^8.5.1",
     "tempy": "^0.6.0",
+    "restify-errors": "^8.0.2",
     "uuid-parse": "^1.1.0"
   },
   "devDependencies": {

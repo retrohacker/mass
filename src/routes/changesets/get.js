@@ -1,3 +1,4 @@
+const errors = require('restify-errors')
 const sql = require('../../sql')
 
 module.exports = ({ pool }) => (request, response, next) => {
@@ -24,8 +25,7 @@ module.exports = ({ pool }) => (request, response, next) => {
     // request.
     if (err) {
       request.log.error({ err })
-      err.statusCode = 500
-      return next(err)
+      return next(new errors.InternalServerError(`${request.id}`))
     }
 
     response.header('content-type', 'application/json')

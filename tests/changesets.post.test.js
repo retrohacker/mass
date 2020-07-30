@@ -25,7 +25,7 @@ test('server should 400 on missing body', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })
@@ -37,7 +37,7 @@ test('server should 400 on non-string name', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })
@@ -49,7 +49,7 @@ test('server should 400 on missing image', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })
@@ -61,7 +61,7 @@ test('server should 400 on non-string image', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })
@@ -73,7 +73,7 @@ test('server should 400 on missing stakeholders', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })
@@ -85,7 +85,7 @@ test('server should 400 on non-array stakeholders', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })
@@ -97,7 +97,7 @@ test('server should 400 on non-string-array stakeholders', async t => {
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b
-  }).json()
+  })
   t.plan(1)
   t.is(400, resp.statusCode)
 })

@@ -1,25 +1,19 @@
+const errors = require('restify-errors')
 const neo = require('neo-async')
 const sql = require('../../sql')
 
 module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ params: request.params }, 'got request')
 
-  // Convienence wrapper for rejecting invalid payloads
-  const invalid = (msg) => {
-    const err = new Error(msg)
-    err.statusCode = 400
-    return next(err)
-  }
-
   const { name } = request.params
 
   // First validate our payload
   if (!name) {
-    return invalid('expected name param')
+    return next(new errors.BadRequestError('expected name param'))
   }
 
   if ((typeof name) !== 'string') {
-    return invalid('expected name to be string')
+    return next(new errors.BadRequestError('expected name to be string'))
   }
 
   let result
@@ -35,13 +29,10 @@ module.exports = ({ pool }) => (request, response, next) => {
   ], err => {
     if (err) {
       request.log.error({ err })
-      err.statusCode = 500
-      return next(err)
+      return next(new errors.InternalServerError(`${request.id}`))
     }
     if (!result) {
-      const err = new Error('Not Found')
-      err.statusCode = 404
-      return next(err)
+      return next(new errors.NotFoundError(`Repository ${name} does not exist`))
     }
     response.header('content-type', 'application/json')
     response.status(201)

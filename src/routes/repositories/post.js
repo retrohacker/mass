@@ -1,3 +1,4 @@
+const errors = require('restify-errors')
 const sql = require('../../sql')
 const hlb = require('../../hlb')
 const neo = require('neo-async')
@@ -6,31 +7,24 @@ const genDigest = require('../../digest')
 module.exports = ({ pool }) => (request, response, next) => {
   request.log.info({ body: request.body }, 'got request')
 
-  // Convienence wrapper for rejecting invalid payloads
-  const invalid = (msg) => {
-    const err = new Error(msg)
-    err.statusCode = 400
-    return next(err)
-  }
-
   if (request.body === undefined) {
-    return invalid('Expected JSON post body')
+    return next(new errors.BadRequestError('Expected JSON post body'))
   }
 
   const { artifactName, changeset } = request.body
 
   // First validate our payload
   if (changeset === undefined) {
-    return invalid('changeset is a required field')
+    return next(new errors.BadRequestError('changeset is a required field'))
   }
   if ((typeof changeset) !== 'string') {
-    return invalid('changeset must be a string')
+    return next(new errors.BadRequestError('changeset must be a string'))
   }
   if (artifactName === undefined) {
-    return invalid('artifactName is a required field')
+    return next(new errors.BadRequestError('artifactName is a required field'))
   }
   if ((typeof artifactName) !== 'string') {
-    return invalid('artifactName must be a string')
+    return next(new errors.BadRequestError('artifactName must be a string'))
   }
 
   request.log.info({ artifactName, changeset }, 'creating repository')
@@ -95,12 +89,11 @@ module.exports = ({ pool }) => (request, response, next) => {
     }
   ], (err) => {
     if (err && err.invalid === true) {
-      return invalid(err.message)
+      return next(new errors.BadRequestError(err.message))
     }
     if (err) {
       request.log.error({ err })
-      err.statusCode = 500
-      return next(err)
+      return next(new errors.InternalServerError(`${request.id}`))
     }
     response.header('content-type', 'application/json')
     response.status(201)
