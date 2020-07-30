@@ -5,7 +5,7 @@ const { promisify } = require('util')
 const util = require('./util.js')
 
 const changeset = () => ({
-  name: `${(Math.random() * 1000000) | 0}`,
+  name: util.uuid(),
   image: 'fizzbuzz',
   stakeholders: ['beep', 'boop']
 })

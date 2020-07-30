@@ -18,9 +18,11 @@
   "dependencies": {
     "glob": "^7.1.6",
     "neo-async": "^2.6.1",
+    "parse-docker-image-name": "^1.0.1",
     "pg": "^8.2.1",
     "pino": "^6.3.0",
     "restify": "^8.5.1",
+    "tempy": "^0.6.0",
     "uuid-parse": "^1.1.0"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ const util = require('./util.js')
 const { promisify } = require('util')
 
 const body = () => ({
-  name: 'foobar',
+  name: util.uuid(),
   image: 'fizzbuzz',
   stakeholders: ['beep', 'boop']
 })

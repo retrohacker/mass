@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS repositories (
   name STRING PRIMARY KEY,
+  artifactName STRING UNIQUE NOT NULL,
   head STRING
 );

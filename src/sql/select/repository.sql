@@ -1,3 +1,3 @@
-SELECT name, head
+SELECT name, artifactName, head
 FROM repositories
 WHERE name=$1
