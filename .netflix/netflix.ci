@@ -1,0 +1,44 @@
+#!/bin/bash
+set -ex
+
+#############
+# RUN TESTS #
+#############
+
+# Start a cockroach container on a random port
+DB_ID="$(docker run -d -p 26257 cockroachdb/cockroach:v20.1.2 start --insecure)"
+
+# Ensure we always clean up the container when the script finishes
+function cleanup {
+  docker rm -f "${DB_ID}"
+}
+trap cleanup EXIT
+
+# Get the port number for the container we started
+DB_PORT="$(docker inspect --format '{{ index .NetworkSettings.Ports "26257/tcp" 0 "HostPort" }}' "${DB_ID}")"
+
+# Configure the database
+docker exec "${DB_ID}" ./cockroach init --insecure || true
+docker exec "${DB_ID}" ./cockroach sql --insecure --execute 'CREATE USER IF NOT EXISTS mart; CREATE DATABASE IF NOT EXISTS mass; GRANT ALL ON DATABASE mass TO mart;'
+
+# Output that is useful for debugging a RocketCI job
+echo "Started cockroachdb container "${DB_ID}" on port ${DB_PORT}"
+docker inspect "${DB_ID}"
+
+# Install our dependencies
+npm ci
+
+# Set our database port
+export MASS_DB_PORT="${DB_PORT}"
+
+# Run our tests
+npm run test
+
+#####################
+# Publish our image #
+#####################
+
+if [[ -z $ROCKET_PR_NUMBER ]]; then
+   # only publish when PR NUMBER is not set
+   newt publish
+fi

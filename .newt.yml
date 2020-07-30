@@ -1,0 +1,11 @@
+app-type: docker-image
+jenkins-default-job: MART-mass-image-publish
+jenkins-jobs:
+- MART-mass-image-publish
+jenkins-master: krypton
+name: mass
+org: mart
+team-email: managed-artifacts@netflix.com
+config:
+  include:
+    - include/commands/hlb.yml

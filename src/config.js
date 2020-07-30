@@ -16,4 +16,15 @@ try {
   log.info({ path: PATH, err: e }, 'failed to load config, using default')
   module.exports = require('../config.json')
 }
+
+// Process any environment variables set
+if (process.env.MASS_DB_HOST) {
+  log.info('detect MASS_DB_HOST envvar')
+  module.exports.db.host = process.env.MASS_DB_HOST
+}
+if (process.env.MASS_DB_PORT) {
+  log.info('detect MASS_DB_PORT envvar')
+  module.exports.db.port = process.env.MASS_DB_PORT
+}
+
 log.info({ config: module.exports }, 'server starting with config')

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const db = require('./db')
 const restify = require('restify')
 const neo = require('neo-async')
@@ -43,6 +44,10 @@ module.exports = function init (conf, cb) {
       server.get('/repositories/:name/commits', require('./routes/repositories/get-commits.js')(c))
       server.get('/repositories/:name/commits/:commit', require('./routes/repositories/get-commits-commit.js')(c))
       server.get('/campaigns/:uuid', require('./routes/campaigns/get-uuid.js')(c))
+      server.get('/healthcheck', (request, response, next) => {
+        response.send(200, '')
+        next()
+      })
       server.listen(...config.server.listen, cb)
       server.on('restifyError', (request, response, err, next) => {
         request.log.error({ err })

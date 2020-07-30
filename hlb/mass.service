@@ -1,0 +1,14 @@
+[Unit]
+Description=Managed Artifact Stake Service
+Wants=nflx.target
+After=nflx.target
+
+[Service]
+Type=simple
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ExecStart=/opt/mass/src/index.js
+Restart=always
+EnvironmentFile=/etc/nflx/static-environment
+
+[Install]
+WantedBy=multi-user.target

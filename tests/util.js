@@ -13,9 +13,9 @@ const getConfig = () => ({
   },
   db: {
     user: 'mart',
-    host: 'localhost',
+    host: process.env.MASS_DB_HOST || 'localhost',
     database: 'mass',
-    port: 26257
+    port: process.env.MASS_DB_PORT || 26257
   },
   log: {
     name: 'mass',

@@ -1,0 +1,29 @@
+export build
+
+fs build() {
+	copy nodefiles "/" "/opt/mass" with createDestPath
+	copy config "/config.json" "/etc/mass.json"
+	copy systemd "/mass.service" "/lib/systemd/system/mass.service"
+	run "npm ci --prod" with option {
+		dir "/opt/mass"
+	}
+	run "systemctl enable mass.service"
+}
+
+fs nodefiles() {
+	local "../" with option {
+		includePatterns "src" "package.json" "package-lock.json" "config.json"
+	}
+}
+
+fs config() {
+	local "./" with option {
+		includePatterns "config.json"
+	}
+}
+
+fs systemd() {
+	local "./" with option {
+		includePatterns "mass.service"
+	}
+}
