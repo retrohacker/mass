@@ -1,6 +1,6 @@
 export build
 
-fs build () {
-  image "dockerregistry.test.netflix.net:7002/baseos/bionic:release" with resolve
-  cmd "/nflx/bin/init"
+fs build() {
+	image "dockerregistry.test.netflix.net:7002/baseos/bionic:release" with resolve
+	cmd "/nflx/bin/init"
 }

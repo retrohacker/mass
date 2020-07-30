@@ -1,14 +1,14 @@
 import go from fs {
-  scratch
-  copy src "go.hlb" "module.hlb"
+	scratch
+	copy src "go.hlb" "module.hlb"
 }
 
 export build
 
 fs build() {
-  go.crossBinaries src "github.com/openllb/hlb/cmd/hlb" "github.com/openllb/hlb"
+	go.crossBinaries src "github.com/openllb/hlb/cmd/hlb" "github.com/openllb/hlb"
 }
 
 fs src() {
-  git "https://github.com/openllb/hlb.git" "netflix" with keepGitDir
+	git "https://github.com/openllb/hlb.git" "netflix" with keepGitDir
 }

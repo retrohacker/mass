@@ -1,7 +1,7 @@
 export build
 
 fs build() {
-  extracted "12.18.3"
+	extracted "12.18.3"
 }
 
 # Verifies that the nodejs binary is symlinked correctly and executable.
