@@ -61,6 +61,9 @@ fs publish() {
 
 /* Given a commit object, build and return a docker image using hlb */
 function build (commit, cb) {
+  // Generate a working directory for our build with our HLB for the artifact
+  // we are smithing. This is where we will invoke hlb and where we will write
+  // the logs for the build
   const hlb = generateHlb(commit)
   const tmpdir = tempy.directory({ prefix: 'mass' })
   const build = path.join(tmpdir, 'build.hlb')
@@ -69,11 +72,14 @@ function build (commit, cb) {
     err.tmpdir = tmpdir
     return cb(err)
   }
+  // Create the hlb file and our log file
   neo.parallel({
     build: (cb) => fs.writeFile(build, hlb, 'utf8', cb),
     output: (cb) => fs.open(output, 'a', cb)
   }, (err, files) => {
     if (err) return fail(err)
+
+    // Gracefully handle any errors during the build
     let once = 0 // Dedupe invocations of done
     const done = (err, code) => {
       if (once++ > 0) return undefined
@@ -81,11 +87,20 @@ function build (commit, cb) {
       if (code !== 0) return fail(new Error(`hlb returned status code: ${code}`))
       return cb()
     }
-    spawn('hlb', ['run', '--log-output=plain', '--target=publish', 'build.hlb'], {
+
+    // Spawn hlb and pipe all logs to our log file
+    const build = spawn('hlb', [
+      'run', '--log-output=plain', '--target=publish', 'build.hlb'
+    ], {
       cwd: tmpdir,
       stdio: ['ignore', files.output, files.output]
     }).on('error', (err) => done(err))
       .on('close', (code) => done(null, code))
+
+    // Builds should never take longer than 60 seconds
+    setTimeout(() => {
+      if (build.connected) build.kill('SIGKILL')
+    }, 1000 * 60)
   })
 }
 
