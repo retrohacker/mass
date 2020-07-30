@@ -1,10 +1,12 @@
 export build
 
 fs build() {
-  copy nodefiles "/" "/opt/mass" with option { createDestPath; }
+  copy nodefiles "/" "/opt/mass" with createDestPath
   copy config "/config.json" "/etc/mass.json"
   copy systemd "/mass.service" "/lib/systemd/system/mass.service"
-  run "npm ci --prod" with option { dir "/opt/mass"; }
+  run "npm ci --prod" with option {
+    dir "/opt/mass"
+  }
   run "systemctl enable mass.service"
 }
 

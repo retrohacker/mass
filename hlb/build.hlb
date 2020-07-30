@@ -9,7 +9,7 @@ import titus from fs {
 
 fs build() {
   baseos.build
-  copy nodejs.build "/" "/" with option { createDestPath; }
+  copy nodejs.build "/" "/" with createDestPath
   project.build
   copy hlb.build "hlb-linux-amd64" "/bin/hlb"
 }
