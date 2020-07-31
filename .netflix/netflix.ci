@@ -1,9 +1,15 @@
 #!/bin/bash
 set -ex
 
-#############
-# RUN TESTS #
-#############
+##########################
+# Build Test Environment #
+##########################
+
+newt hlb run --target rocketCI ./hlb/build.hlb
+
+#####################
+# Start Cockroachdb #
+#####################
 
 # Start a cockroach container on a random port
 DB_ID="$(docker run -d -p 26257 cockroachdb/cockroach:v20.1.2 start --insecure)"
@@ -25,14 +31,15 @@ docker exec "${DB_ID}" ./cockroach sql --insecure --execute 'CREATE USER IF NOT 
 echo "Started cockroachdb container "${DB_ID}" on port ${DB_PORT}"
 docker inspect "${DB_ID}"
 
-# Install our dependencies
-npm ci
+#############
+# Run Tests #
+#############
 
-# Set our database port
-export MASS_DB_PORT="${DB_PORT}"
-
-# Run our tests
-npm run test
+docker run \
+  --env "MASS_DB_PORT=${DB_PORT}" \
+  --network host \
+  --workdir "/opt/mass" \
+  mass-test-environment npm test
 
 #####################
 # Publish our image #
