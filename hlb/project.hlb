@@ -1,18 +1,36 @@
+import baseos "./baseos.hlb"
+
+import nodejs "./nodejs.hlb"
+
 export build
 
 fs build() {
 	copy nodefiles "/" "/opt/mass" with createDestPath
 	copy config "/config.json" "/etc/mass.json"
 	copy systemd "/mass.service" "/lib/systemd/system/mass.service"
-	run "npm ci --prod" with option {
-		dir "/opt/mass"
-	}
+	copy npmInstall "/" "/opt/mass/node_modules"
 	run "systemctl enable mass.service"
 }
 
 fs nodefiles() {
 	local "../" with option {
-		includePatterns "src" "package.json" "package-lock.json" "config.json"
+		includePatterns "src" "package.json" "package-lock.json" "config.json" ".npmrc"
+	}
+}
+
+fs npm() {
+	baseos.build
+	copy nodejs.build "/" "/" with createDestPath
+	run "apt-get update && apt-get install --no-install-recommends -y make python gcc g++"
+	run "npx node-gyp install"
+	run "npm ci --prod" with option {
+		mount fs {
+			local "../" with option {
+				includePatterns "package.json" "package-lock.json" ".npmrc"
+			}
+		} "/in" with readonly
+		mount scratch "/in/node_modules" as npmInstall
+		dir "/in"
 	}
 }
 

@@ -3,17 +3,26 @@ const db = require('./db')
 const restify = require('restify')
 const neo = require('neo-async')
 const pino = require('pino')
+const metrics = require('./metrics')
 
 module.exports = function init (conf, cb) {
   const config = JSON.parse(JSON.stringify(conf))
   const log = config.log = pino(config.log)
-  const server = restify.createServer({ log: config.log })
+  const server = restify.createServer({ log })
 
+  server.pre(restify.plugins.pre.context())
   server.use(restify.plugins.bodyParser())
   server.use(restify.plugins.queryParser({
     mapParams: false
   }))
   server.use(restify.plugins.requestLogger())
+  const { atlas, nodeMetrics } = metrics({ server, log })
+  function shutdownAtlas () {
+    nodeMetrics.stop()
+    atlas.stop()
+  }
+  process.on('SIGINT', shutdownAtlas)
+  process.on('SIGTERM', shutdownAtlas)
   server.use((request, response, next) => {
     request.log.info({
       route: request.getRoute().spec,
@@ -66,7 +75,10 @@ module.exports = function init (conf, cb) {
       neo.parallel([
         (cb) => server.close(cb),
         (cb) => pool ? pool.end(cb) : cb()
-      ], done)
+      ], (e) => {
+        shutdownAtlas()
+        done(e)
+      })
     }
 
     cb(e, result)
