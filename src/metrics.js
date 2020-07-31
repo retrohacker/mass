@@ -9,11 +9,11 @@ module.exports = function init ({ server, log }) {
   const metrics = new NodeMetrics(registry)
   metrics.start()
 
-  const incomming = registry.counter('server.incommingRequest')
+  const incoming = registry.counter('server.incomingRequest')
   const latency = registry.timer('server.requestLatency')
   const requests = registry.createId('server.requestCount')
   server.use((request, response, next) => {
-    incomming.increment()
+    incoming.increment()
     request.set('latency', registry.hrtime())
     next()
   })
