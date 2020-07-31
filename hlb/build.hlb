@@ -32,9 +32,33 @@ fs rocketCI() {
 			includePatterns "scripts" "tests"
 		}
 	} "/" "/opt/mass"
-	run "apt update && apt install -y --no-install-recommends shellcheck"
-	run "npm ci" with option {
-		dir "/opt/mass"
-	}
+	run <<~APT
+		apt-get update &&
+		apt-get install --no-install-recommends -y shellcheck &&
+		apt-get clean &&
+		rm -rfv /var/lib/apt/lists/* /var/cache/apt/*
+	APT
+	copy npmInstall "/" "/opt/mass/node_modules"
 	dockerLoad "mass-test-environment"
+}
+
+fs npmci() {
+	baseos.build
+	copy nodejs.build "/" "/" with createDestPath
+	run <<~APT
+		apt-get update &&
+		apt-get install --no-install-recommends -y make python gcc g++ &&
+		apt-get clean &&
+		rm -rfv /var/lib/apt/lists/* /var/cache/apt/*
+	APT
+	run "npx node-gyp install"
+	run "npm ci" with option {
+		mount fs {
+			local "../" with option {
+				includePatterns "package.json" "package-lock.json" ".npmrc"
+			}
+		} "/in" with readonly
+		mount scratch "/in/node_modules" as npmInstall
+		dir "/in"
+	}
 }
