@@ -24,3 +24,17 @@ fs publish() {
 	}
 	titus.registryPush "mart/mass:latest"
 }
+
+fs rocketCI() {
+	build
+	copy fs {
+		local "../" with option {
+			includePatterns "scripts" "tests"
+		}
+	} "/" "/opt/mass"
+	run "apt update && apt install -y --no-install-recommends shellcheck"
+	run "npm ci" with option {
+		dir "/opt/mass"
+	}
+	dockerLoad "mass-test-environment"
+}
