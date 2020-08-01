@@ -131,7 +131,7 @@ function generateCommit (client, log, pr, cb) {
     const commit = {
       repository: pr.repository,
       changeset: pr.changeset,
-      artifactName: repo.artifactname,
+      artifactName: repo.artifactName,
       parent: repo.head,
       digest: genDigest(repo.head, changesets),
       changesets
