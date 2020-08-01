@@ -4,7 +4,7 @@ const util = require('./util.js')
 const { promisify } = require('util')
 
 const body = () => ({
-  name: util.uuid(),
+  name: 'foobar',
   image: 'fizzbuzz',
   stakeholders: ['beep', 'boop']
 })
@@ -34,6 +34,18 @@ test('server should 400 on non-string name', async t => {
   const { port } = t.context
   const b = body()
   b.name = 10
+  const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
+    throwHttpErrors: false,
+    json: b
+  })
+  t.plan(1)
+  t.is(400, resp.statusCode)
+})
+
+test('server should 400 on invalid name', async t => {
+  const { port } = t.context
+  const b = body()
+  b.name = '@invalid/name'
   const resp = await got.post(`http://127.0.0.1:${port}/changesets`, {
     throwHttpErrors: false,
     json: b

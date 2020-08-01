@@ -26,15 +26,19 @@ const artifactDeps = (changesets, artifactName) => {
 // or the titus hlb module
 const importArtifact = ({ name, image }) =>
   parseImage(image).hostname === undefined
-    ? `import ${name} from fs { titus.registryImage "${image}"; }`
-    : `import ${name} from fs { image "${image}"; }`
+    ? `import ${sanitizeIdent(name)} from fs { titus.registryImage "${image}"; }`
+    : `import ${sanitizeIdent(name)} from fs { image "${image}"; }`
 
 const push = (artifactName) =>
   parseImage(artifactName).hostname === undefined
     ? `titus.registryPush "${artifactName}"`
     : `dockerPush "${artifactName}"`
 
-const generateStake = ({ name }) => `${name}.stake`
+const generateStake = ({ name }) => `${sanitizeIdent(name)}.stake`
+
+// Changeset names need to be sanitized because identifiers in HLB must match
+// the regex: [a-zA-Z_][a-zA-Z0-9_]*
+const sanitizeIdent = (ident) => ident.replace(/^[^a-zA-Z_]/, '_').replace(/[^a-zA-Z0-9_]/g, '_')
 
 // {
 //   artifactName: "foobar",
