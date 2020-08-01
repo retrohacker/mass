@@ -20,6 +20,16 @@ const mockCommit = () => ({
   ]
 })
 
+const mockBadIdentCommit = () => ({
+  artifactName: `localhost:5000/mass/test-${util.uuid()}`,
+  changesets: [
+    {
+      name: '@baseos-stake',
+      image: 'localhost:5000/mass/baseos'
+    }
+  ]
+})
+
 test('should include titus for non-qualified artifactName', async t => {
   const commit = mockCommit()
   commit.artifactName = 'foo'
@@ -49,4 +59,11 @@ test('should invoke all changesets', async t => {
     t.assert(result.indexOf(`import ${changeset.name} from fs`) >= 0)
     t.assert(result.indexOf(`${changeset.name}.stake`) >= 0)
   })
+})
+
+test('should sanitize identifiers for hlb', async t => {
+  const commit = mockBadIdentCommit()
+  const result = hlb.generateHlb(commit)
+  t.assert(result.indexOf('import _baseos_stake from') >= 0)
+  t.assert(result.indexOf('_baseos_stake.stake') >= 0)
 })

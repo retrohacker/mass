@@ -19,6 +19,9 @@ module.exports = ({ pool, log }) => (request, response, next) => {
   if ((typeof name) !== 'string') {
     return next(new errors.BadRequestError('name must be a string'))
   }
+  if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name)) {
+    return next(new errors.BadRequestError('name must match /[a-zA-Z][a-zA-Z0-9_-]*/'))
+  }
   if (image === undefined) {
     return next(new errors.BadRequestError('image is a required field'))
   }

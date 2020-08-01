@@ -15,6 +15,8 @@ fs build() {
 	copy nodejs.build "/" "/" with createDestPath
 	project.build
 	copy hlb.build "hlb-linux-amd64" "/bin/hlb"
+	# Set CI so that HLB looks for metatron certificates on Titus correctly.
+	env "CI" "true"
 }
 
 fs publish() {
