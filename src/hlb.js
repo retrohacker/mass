@@ -21,13 +21,12 @@ const artifactDeps = (changesets, artifactName) => {
   return result
 }
 
+const hasStake = ({ name, image }) => image.length > 0
+
 // Today we support Titus artifacts and standard Docker artifacts, the only
 // difference being whether we let the docker daemon resolve the image string
 // or the titus hlb module
-const importArtifact = ({ name, image }) =>
-  parseImage(image).hostname === undefined
-    ? `import ${sanitizeIdent(name)} from fs { titus.registryImage "${image}"; }`
-    : `import ${sanitizeIdent(name)} from fs { image "${image}"; }`
+const importArtifact = ({ name, image }) => `import ${sanitizeIdent(name)} from fs { image "${image}"; }`
 
 const push = (artifactName) =>
   parseImage(artifactName).hostname === undefined
@@ -51,10 +50,10 @@ const sanitizeIdent = (ident) => ident.replace(/^[^a-zA-Z_]/, '_').replace(/[^a-
 // }
 const generateHlb = (commit) => `
 ${artifactDeps(commit.changesets, commit.artifactName)}
-${commit.changesets.map(importArtifact).join('\n')}
+${commit.changesets.filter(hasStake).map(importArtifact).join('\n')}
 
 fs build() {
-${commit.changesets.map(generateStake).map(v => `  ${v}`).join('\n')}
+${commit.changesets.filter(hasStake).map(generateStake).map(v => `  ${v}`).join('\n')}
 }
 
 fs publish() {
@@ -108,4 +107,4 @@ function build (commit, cb) {
   })
 }
 
-module.exports = { generateHlb, build }
+module.exports = { generateHlb, build, sanitizeIdent }
