@@ -40,6 +40,37 @@ test.after.always(async (t) => {
   await promisify(t.context.close)
 })
 
+test('New stakeholder should pick up latest changeset', async t => {
+  const { port, pool, log } = t.context
+  // Create a transitive dependency
+  const transitiveOld = await mkChangeset(port)
+  const transitiveNew = await mkChangeset(port, {
+    name: transitiveOld.name,
+    image: transitiveOld.image,
+    stakeholders: []
+  })
+  // Create a changeset and a repository, but don't depend on the transitive
+  // yet.
+  const headOld = await mkChangeset(port)
+  const repository = await mkRepository(port, headOld.name)
+  // Update the root changeset to depend on the transitive.
+  const headNew = await mkChangeset(port, {
+    name: headOld.name,
+    image: headOld.image,
+    stakeholders: [transitiveOld.name]
+  })
+  let commits = []
+  await promisify(campaign)(pool, log)
+  // Verify the repository now has two commits
+  commits = (await got.get(`http://127.0.0.1:${port}/repositories/${repository.name}/commits`).json()).commits
+  t.is(commits.length, 2, 'got two commits back for repository')
+  // Verify the head commit has two changesets
+  const head = (await got.get(`http://127.0.0.1:${port}/repositories/${repository.name}/commits/${commits[0].digest}`).json())
+  t.is(head.changesets.length, 2, 'got two changesets back for head commit')
+  // Verify that the new transitive was picked up
+  t.deepEqual(head.changesets.sort(), [headNew.uuid, transitiveNew.uuid].sort())
+})
+
 test('Server should generate change campaign', async t => {
   const { port, pool, log } = t.context
   // Create a changeset and a repository
