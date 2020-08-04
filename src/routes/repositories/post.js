@@ -69,12 +69,25 @@ module.exports = ({ pool }) => (request, response, next) => {
     (cb) => {
       // This query grabs the latest changeset under a given name and the
       // latest changeset for each dependency in it's dependency tree.
-      pool.query(sql.select.changesetDeps, [uuid], cb)
+      pool.query(sql.select.latestStakeholders, [uuid], cb)
     },
     (res, cb) => {
       // Turn the snapshot of the dependency tree into an initial commit
-      changesets = res.rows
-      const uuids = changesets.map(v => v.uuid)
+      let latest = res.rows
+
+      const current = new Map()
+      latest.forEach(v => { current.set(v.name, v) })
+
+      let index = 0
+      ;(function mark(name) {
+        const node = current.get(name)
+        node.index = index++
+        node.stakeholders.forEach(mark)
+      })(changeset)
+
+      latest.sort((a, b) => (a.index > b.index) ? 1 : -1)
+
+      const uuids = latest.map(v => v.uuid)
       const digest = genDigest('null', uuids)
       request.log.info({
         changesets: uuids,
