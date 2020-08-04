@@ -189,130 +189,255 @@ environments:
     spec:
       description: Application ELB Security Group for mass
       inboundRules:
-      - blockRange: 50.112.119.144/29
+      - blockRange: 100.97.0.0/16
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
       - blockRange: 100.97.0.0/16
         portRange:
-          endPort: 80
-          startPort: 80
+          endPort: 443
+          startPort: 443
         protocol: TCP
-      - blockRange: 54.77.255.220/30
+      - blockRange: 50.112.119.144/29
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
-      - blockRange: 50.19.255.104/29
+      - blockRange: 50.112.119.144/29
         portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 100.78.0.0/16
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 2600:1f1f:4b2:3a00::/56
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 2600:1f18:2772:d500::/56
-        portRange:
-          endPort: 80
-          startPort: 80
+          endPort: 443
+          startPort: 443
         protocol: TCP
       - blockRange: 100.122.0.0/16
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
+      - blockRange: 100.122.0.0/16
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 2600:1f18:2772:d500::/56
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 2600:1f18:2772:d500::/56
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 100.78.0.0/16
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 100.78.0.0/16
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
       - blockRange: 2600:1f1c:adb:5a00::/56
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
-      - blockRange: 2a05:d018:5a2:c100::/56
+      - blockRange: 2600:1f1c:adb:5a00::/56
         portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 100.66.96.0/19
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 100.66.0.0/18
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 100.79.0.0/16
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 54.219.190.220/30
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 100.65.0.0/16
-        portRange:
-          endPort: 80
-          startPort: 80
-        protocol: TCP
-      - blockRange: 54.213.255.128/30
-        portRange:
-          endPort: 80
-          startPort: 80
+          endPort: 443
+          startPort: 443
         protocol: TCP
       - blockRange: 100.96.0.0/16
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
+      - blockRange: 100.96.0.0/16
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 100.66.0.0/18
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 100.66.0.0/18
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 54.213.255.128/30
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 54.213.255.128/30
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
       - blockRange: 46.137.166.216/29
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
-      - blockRange: 54.165.127.252/30
+      - blockRange: 46.137.166.216/29
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 50.19.255.104/29
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
-      - blockRange: 50.18.51.216/29
+      - blockRange: 50.19.255.104/29
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 100.79.0.0/16
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
-      - blockRange: 100.98.0.0/16
+      - blockRange: 100.79.0.0/16
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 100.66.96.0/19
         portRange:
           endPort: 80
           startPort: 80
+        protocol: TCP
+      - blockRange: 100.66.96.0/19
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 100.65.0.0/16
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 100.65.0.0/16
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 54.219.190.220/30
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 54.219.190.220/30
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 2a05:d018:5a2:c100::/56
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 2a05:d018:5a2:c100::/56
+        portRange:
+          endPort: 443
+          startPort: 443
         protocol: TCP
       - blockRange: 100.66.128.0/19
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
+      - blockRange: 100.66.128.0/19
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
       - blockRange: 100.66.64.0/19
         portRange:
           endPort: 80
           startPort: 80
+        protocol: TCP
+      - blockRange: 100.66.64.0/19
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 2600:1f1f:4b2:3a00::/56
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 2600:1f1f:4b2:3a00::/56
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 50.18.51.216/29
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 50.18.51.216/29
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 54.165.127.252/30
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 54.165.127.252/30
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 54.77.255.220/30
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 54.77.255.220/30
+        portRange:
+          endPort: 443
+          startPort: 443
         protocol: TCP
       - blockRange: 2a05:d018:b6e:4f00::/56
         portRange:
           endPort: 80
           startPort: 80
         protocol: TCP
+      - blockRange: 2a05:d018:b6e:4f00::/56
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
       - blockRange: 2600:1f14:d64:1a00::/56
         portRange:
           endPort: 80
           startPort: 80
+        protocol: TCP
+      - blockRange: 2600:1f14:d64:1a00::/56
+        portRange:
+          endPort: 443
+          startPort: 443
+        protocol: TCP
+      - blockRange: 100.98.0.0/16
+        portRange:
+          endPort: 80
+          startPort: 80
+        protocol: TCP
+      - blockRange: 100.98.0.0/16
+        portRange:
+          endPort: 443
+          startPort: 443
         protocol: TCP
       locations:
         account: test
