@@ -100,10 +100,10 @@ function build (commit, cb) {
     }).on('error', (err) => done(err))
       .on('close', (code) => done(null, code))
 
-    // Builds should never take longer than 60 seconds
+    // Builds should never take longer than 5 minutes
     setTimeout(() => {
       if (build.connected) build.kill('SIGKILL')
-    }, 1000 * 60)
+    }, 1000 * 60 * 5)
   })
 }
 
