@@ -170,11 +170,6 @@ environments:
           endPort: 7001
           startPort: 7001
         protocol: TCP
-      - name: nf-datacenter
-        portRange:
-          endPort: 7001
-          startPort: 7001
-        protocol: TCP
       locations:
         account: test
         regions:
