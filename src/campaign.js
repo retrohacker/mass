@@ -69,65 +69,63 @@ function shouldRun (cb) {
 function generateCommit (client, log, pr, cb) {
   log.info({ pr }, 'converting PR to commit')
   neo.parallel({
-    current: (cb) => client.query(sql.select.treeRepo, [pr.repository], (err, res) => cb(err, res)),
+    head: (cb) => client.query(sql.select.repositoryHeadChangesets, [pr.repository], (err, res) => cb(err, res)),
     target: (cb) => client.query(sql.select.changeset, [pr.changeset], (err, res) => cb(err, res)),
-    latest: (cb) => client.query(sql.select.changesetDeps, [pr.changeset], (err, res) => cb(err, res)),
+    latest: (cb) => client.query(sql.select.latestStakeholders, [pr.changeset], (err, res) => cb(err, res)),
     repo: (cb) => client.query(sql.select.repository, [pr.repository], (err, res) => cb(err, res))
   }, (err, res) => {
     if (err) { return cb(err) }
 
     // Now we have the list of changesets (and their stakeholders) for the
-    // current commit along with our target changeset to apply.
-    const current = res.current.rows
+    // head commit along with our target changeset to apply.
+    const head = res.head.rows
     const target = res.target.rows[0]
     const repo = res.repo.rows[0]
     const latest = new Map()
     res.latest.rows.forEach(v => latest.set(v.name, v))
 
-    log.info({ current, target }, 'beginning mark and sweep')
+    // Build a map of the current changesets of head and mark them as
+    // unvisited.
+    const current = new Map()
+    head.forEach(v => {
+      v.visited = false
+      current.set(v.name, v)
+    })
 
-    // The entrypoint to our tree is the changeset that shares a name with our
-    // repository
-    const entrypoint = pr.repository
+    // Replace the target changeset.
+    current.set(target.name, target)
 
-    // Mark all the nodes as not visited
-    current.forEach(v => { v.visited = false })
+    // Traverse the target changeset and add new changesets that aren't in
+    // current.
+    ;(function traverse (name) {
+      if (!current.has(name)) {
+        current.set(name, latest.get(name))
+      }
+      const node = current.get(name)
+      node.stakeholders.forEach(traverse)
+    })(target.name)
 
-    // Index all the nodes of our dependency tree to prepare for mark and sweep
-    const nodes = new Map()
-    current.forEach(v => nodes.set(v.name, v))
+    // The root to our tree is the changeset that shares a name with our
+    // repository.
+    const root = pr.repository
 
-    // Update the dependency tree w/ our proposed PR
-    nodes.set(target.name, target)
-
-    // For any new dependencies our commit introduces, include them in the
-    // flattened dependency tree
-    target.stakeholders
-      .filter(v => !nodes.has(v))
-      .forEach(v => { nodes.set(v, latest.get(v)) })
-
+    // Now that we have added the subtree of changesets from target, traverse
+    // the tree from the repository root and mark all changesets visited.
+    let index = 0
     ;(function mark (name) {
-      const node = nodes.get(name)
-      if (!node) return undefined
+      const node = current.get(name)
+      if (!node || node.visited) return
+      node.index = index++
       node.visited = true
-      if (node.visted) return undefined
-      log.info({ node })
       node.stakeholders.forEach(mark)
-    })(entrypoint)
-    log.info({ entrypoint, map: Object.fromEntries(nodes) }, 'finished marking')
+    })(root)
 
-    // Sweep
-    const result = Array.from(nodes.values()).filter(v => v.visited)
-    result.forEach(v => delete v.visited)
-    log.info({ result }, 'finished sweep')
+    // Sweep the unvisited nodes and sort it by so that its ordered by
+    // preorder traversal.
+    const changesets = Array.from(current.values()).filter(v => v.visited)
+    changesets.sort((a, b) => (a.index > b.index) ? 1 : -1)
 
-    const changesets = result.map(v => ({
-      uuid: v.uuid,
-      name: v.name,
-      image: v.image
-    }))
-
-    // Generate commit
+    // Generate pull request commit.
     const commit = {
       repository: pr.repository,
       changeset: pr.changeset,
