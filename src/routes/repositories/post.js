@@ -73,10 +73,10 @@ module.exports = ({ pool }) => (request, response, next) => {
     },
     (res, cb) => {
       // Turn the snapshot of the dependency tree into an initial commit
-      let latest = res.rows
+      changesets = res.rows
 
       const current = new Map()
-      latest.forEach(v => { current.set(v.name, v) })
+      changesets.forEach(v => { current.set(v.name, v) })
 
       let index = 0
       ;(function mark(name) {
@@ -85,9 +85,9 @@ module.exports = ({ pool }) => (request, response, next) => {
         node.stakeholders.forEach(mark)
       })(changeset)
 
-      latest.sort((a, b) => (a.index > b.index) ? 1 : -1)
+      changesets.sort((a, b) => (a.index > b.index) ? 1 : -1)
 
-      const uuids = latest.map(v => v.uuid)
+      const uuids = changesets.map(v => v.uuid)
       const digest = genDigest('null', uuids)
       request.log.info({
         changesets: uuids,
