@@ -1,9 +1,8 @@
 #!/bin/bash
 set -ex
 
-time docker rm -f roach buildkitd registry
-time docker run -d --name=roach --hostname=roach -p 26257:26257 -p 8080:8080 -v /tmp/cockroach-data:/cockroach/cockroach-data cockroachdb/cockroach:v20.1.2 start --insecure
-time docker exec -it roach ./cockroach init --insecure
-time docker exec -it roach ./cockroach sql --insecure --execute 'CREATE USER IF NOT EXISTS mart; CREATE DATABASE IF NOT EXISTS mass; GRANT ALL ON DATABASE mass TO mart;'
-time docker run -d --name buildkitd --privileged --network=host --volume=/etc/resolv.conf:/etc/resolv.conf:ro moby/buildkit:v0.7.1
-time docker run -d -p 5000:5000 --name registry registry:2
+time docker rm -f mass-roach mass-buildkitd mass-registry || true
+time docker run -d --name=mass-roach --hostname=mass-roach -p 26257:26257 -p 8080:8080 -v /tmp/cockroach-data:/cockroach/cockroach-data cockroachdb/cockroach:v20.1.2 start --insecure
+time docker exec -it mass-roach ./cockroach sql --insecure --execute 'CREATE USER IF NOT EXISTS mart; CREATE DATABASE IF NOT EXISTS mass; GRANT ALL ON DATABASE mass TO mart;'
+time docker run -d --name mass-buildkitd --privileged --network=host --volume=/etc/resolv.conf:/etc/resolv.conf:ro moby/buildkit:v0.7.1
+time docker run -d -p 5000:5000 --name mass-registry registry:2
